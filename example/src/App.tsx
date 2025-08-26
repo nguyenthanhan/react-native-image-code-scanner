@@ -36,11 +36,6 @@ export default function App() {
   const [scanResult, setScanResult] = useState<ScanResult | null>(null);
   const [isScanning, setIsScanning] = useState(false);
   const [selectedFormats, setSelectedFormats] = useState<BarcodeFormat[]>([BarcodeFormat.QR_CODE]);
-  const [preprocessingOptions, setPreprocessingOptions] = useState({
-    enhanceContrast: true,
-    grayscale: true,
-    rotations: true,
-  });
 
   const requestPermissions = async () => {
     const { status: cameraStatus } = await ImagePicker.requestCameraPermissionsAsync();
@@ -104,7 +99,7 @@ export default function App() {
       const results = await ImageCodeScanner.scan({
         path: selectedImage,
         formats: selectedFormats,
-        preprocessing: preprocessingOptions,
+        // Preprocessing is always enabled automatically for optimal results
       });
 
       const endTime = Date.now();
@@ -180,39 +175,19 @@ export default function App() {
           ))}
         </View>
 
-        {/* Preprocessing Options */}
+        {/* Automatic Preprocessing Info */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Preprocessing</Text>
-          <Text style={styles.sectionSubtitle}>Enable image enhancement options:</Text>
+          <Text style={styles.sectionTitle}>Automatic Preprocessing</Text>
+          <Text style={styles.sectionSubtitle}>The following enhancements are automatically applied:</Text>
           
-          <View style={styles.optionRow}>
-            <Text>Enhance Contrast</Text>
-            <Switch
-              value={preprocessingOptions.enhanceContrast}
-              onValueChange={(value) => 
-                setPreprocessingOptions(prev => ({ ...prev, enhanceContrast: value }))
-              }
-            />
+          <View style={styles.infoRow}>
+            <Text>• Grayscale conversion for better barcode detection</Text>
           </View>
-
-          <View style={styles.optionRow}>
-            <Text>Grayscale</Text>
-            <Switch
-              value={preprocessingOptions.grayscale}
-              onValueChange={(value) => 
-                setPreprocessingOptions(prev => ({ ...prev, grayscale: value }))
-              }
-            />
+          <View style={styles.infoRow}>
+            <Text>• Contrast enhancement for improved readability</Text>
           </View>
-
-          <View style={styles.optionRow}>
-            <Text>Try Rotations</Text>
-            <Switch
-              value={preprocessingOptions.rotations}
-              onValueChange={(value) => 
-                setPreprocessingOptions(prev => ({ ...prev, rotations: value }))
-              }
-            />
+          <View style={styles.infoRow}>
+            <Text>• Automatic rotation detection (0°, 90°, 180°, 270°)</Text>
           </View>
         </View>
 
@@ -331,6 +306,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: 8,
+  },
+  infoRow: {
+    paddingVertical: 4,
   },
   scanButton: {
     backgroundColor: '#4CAF50',

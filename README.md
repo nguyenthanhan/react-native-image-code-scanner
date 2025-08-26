@@ -126,12 +126,12 @@ const scanQRCode = async (imagePath: string) => {
 };
 ```
 
-### Advanced Usage with Preprocessing
+### Advanced Usage with Multiple Formats
 
 ```typescript
 import ImageCodeScanner, { BarcodeFormat } from 'react-native-image-code-scanner';
 
-const scanWithPreprocessing = async (imagePath: string) => {
+const scanMultipleFormats = async (imagePath: string) => {
   try {
     const results = await ImageCodeScanner.scan({
       path: imagePath,
@@ -140,12 +140,7 @@ const scanWithPreprocessing = async (imagePath: string) => {
         BarcodeFormat.CODE_128,
         BarcodeFormat.EAN_13,
       ],
-      // Enable all preprocessing options
-      preprocessing: {
-        enhanceContrast: true,  // Try contrast enhancement
-        grayscale: true,        // Try grayscale conversion
-        rotations: true,        // Try multiple rotations (0°, 90°, 180°, 270°)
-      },
+      // Preprocessing is always enabled automatically for better recognition
     });
     
     console.log('Found barcodes:', results);
@@ -263,7 +258,7 @@ const scanEverything = async (imagePath: string) => {
 
 ### `ImageCodeScanner.scan(options)`
 
-Scans an image for barcodes.
+Scans an image for barcodes with automatic preprocessing enabled.
 
 #### Parameters
 
@@ -277,21 +272,6 @@ Scans an image for barcodes.
 interface ScanOptions {
   path: string;                          // Path to the image file
   formats?: BarcodeFormat[];             // Array of barcode formats to detect
-  preprocessing?: PreprocessingOptions | boolean;  // Preprocessing configuration
-  platformOverrides?: {                  // Platform-specific preprocessing overrides
-    android?: PreprocessingOptions | boolean;
-    ios?: PreprocessingOptions | boolean;
-  };
-}
-```
-
-#### PreprocessingOptions
-
-```typescript
-interface PreprocessingOptions {
-  enhanceContrast?: boolean;  // Enhance image contrast
-  grayscale?: boolean;        // Convert to grayscale
-  rotations?: boolean;        // Try multiple rotations
 }
 ```
 
@@ -321,13 +301,22 @@ enum BarcodeFormat {
 }
 ```
 
+### Automatic Preprocessing
+
+The library automatically applies the following preprocessing techniques for better recognition:
+
+- **Grayscale Conversion**: Converts images to grayscale for improved barcode detection
+- **Contrast Enhancement**: Enhances image contrast to make barcodes more readable
+- **Rotation Detection**: Tries multiple orientations (0°, 90°, 180°, 270°) automatically
+- **Smart Retry Logic**: If initial scan fails, automatically tries with different preprocessing techniques
+
 ## ⚡ Performance Tips
 
 1. **🖼️ Image Size**: Large images may take longer to process. Consider resizing images before scanning if performance is critical.
 
 2. **🎯 Format Selection**: Specify only the formats you need rather than scanning for all formats.
 
-3. **🔧 Preprocessing**: While preprocessing can improve recognition rates, it also increases processing time. Use selectively based on your needs.
+3. **🔧 Preprocessing**: Automatic preprocessing improves recognition rates but may increase processing time. The library optimizes this automatically.
 
 4. **📱 Platform Differences**: iOS Vision Framework and Android ML Kit may have slight differences in recognition capabilities. Test on both platforms for critical use cases.
 
