@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   Text,
   View,
@@ -12,7 +12,9 @@ import {
   Platform,
   Switch,
 } from 'react-native';
-import ImageCodeScanner, { BarcodeFormat } from 'react-native-image-code-scanner';
+import ImageCodeScanner, {
+  BarcodeFormat,
+} from 'react-native-image-code-scanner';
 import * as ImagePicker from 'expo-image-picker';
 import { StatusBar } from 'expo-status-bar';
 
@@ -35,12 +37,16 @@ export default function App() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [scanResult, setScanResult] = useState<ScanResult | null>(null);
   const [isScanning, setIsScanning] = useState(false);
-  const [selectedFormats, setSelectedFormats] = useState<BarcodeFormat[]>([BarcodeFormat.QR_CODE]);
+  const [selectedFormats, setSelectedFormats] = useState<BarcodeFormat[]>([
+    BarcodeFormat.QR_CODE,
+  ]);
 
   const requestPermissions = async () => {
-    const { status: cameraStatus } = await ImagePicker.requestCameraPermissionsAsync();
-    const { status: libraryStatus } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    
+    const { status: cameraStatus } =
+      await ImagePicker.requestCameraPermissionsAsync();
+    const { status: libraryStatus } =
+      await ImagePicker.requestMediaLibraryPermissionsAsync();
+
     if (cameraStatus !== 'granted' || libraryStatus !== 'granted') {
       Alert.alert(
         'Permissions Required',
@@ -95,7 +101,7 @@ export default function App() {
 
     try {
       const startTime = Date.now();
-      
+
       const results = await ImageCodeScanner.scan({
         path: selectedImage,
         formats: selectedFormats,
@@ -114,7 +120,10 @@ export default function App() {
         Alert.alert('No Codes Found', 'No barcodes were detected in the image');
       }
     } catch (err) {
-      Alert.alert('Scan Error', err instanceof Error ? err.message : 'Unknown error');
+      Alert.alert(
+        'Scan Error',
+        err instanceof Error ? err.message : 'Unknown error'
+      );
     } finally {
       setIsScanning(false);
     }
@@ -133,13 +142,13 @@ export default function App() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Select Image</Text>
           <View style={styles.buttonRow}>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.button}
               onPress={() => handleImagePicker('camera')}
             >
               <Text style={styles.buttonText}>📷 Camera</Text>
             </TouchableOpacity>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.button}
               onPress={() => handleImagePicker('gallery')}
             >
@@ -149,7 +158,10 @@ export default function App() {
 
           {selectedImage && (
             <View style={styles.imageContainer}>
-              <Image source={{ uri: selectedImage }} style={styles.previewImage} />
+              <Image
+                source={{ uri: selectedImage }}
+                style={styles.previewImage}
+              />
             </View>
           )}
         </View>
@@ -157,7 +169,9 @@ export default function App() {
         {/* Barcode Format Selection */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Barcode Formats</Text>
-          <Text style={styles.sectionSubtitle}>Select formats to scan for:</Text>
+          <Text style={styles.sectionSubtitle}>
+            Select formats to scan for:
+          </Text>
           {BARCODE_FORMATS.map((format) => (
             <View key={format.key} style={styles.optionRow}>
               <Text>{format.label}</Text>
@@ -165,9 +179,11 @@ export default function App() {
                 value={selectedFormats.includes(format.key)}
                 onValueChange={(value) => {
                   if (value) {
-                    setSelectedFormats(prev => [...prev, format.key]);
+                    setSelectedFormats((prev) => [...prev, format.key]);
                   } else {
-                    setSelectedFormats(prev => prev.filter(f => f !== format.key));
+                    setSelectedFormats((prev) =>
+                      prev.filter((f) => f !== format.key)
+                    );
                   }
                 }}
               />
@@ -178,8 +194,10 @@ export default function App() {
         {/* Automatic Preprocessing Info */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Automatic Preprocessing</Text>
-          <Text style={styles.sectionSubtitle}>The following enhancements are automatically applied:</Text>
-          
+          <Text style={styles.sectionSubtitle}>
+            The following enhancements are automatically applied:
+          </Text>
+
           <View style={styles.infoRow}>
             <Text>• Grayscale conversion for better barcode detection</Text>
           </View>
@@ -192,7 +210,7 @@ export default function App() {
         </View>
 
         {/* Scan Button */}
-        <TouchableOpacity 
+        <TouchableOpacity
           style={[styles.scanButton, !selectedImage && styles.disabledButton]}
           onPress={scanImage}
           disabled={!selectedImage || isScanning}
@@ -209,7 +227,7 @@ export default function App() {
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Results</Text>
             <Text style={styles.scanTime}>Scan time: {scanResult.time}ms</Text>
-            
+
             {scanResult.data.length > 0 ? (
               <View>
                 {scanResult.data.map((code, index) => (

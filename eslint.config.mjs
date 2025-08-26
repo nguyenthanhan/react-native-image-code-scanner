@@ -2,7 +2,6 @@ import { fixupConfigRules } from '@eslint/compat';
 import { FlatCompat } from '@eslint/eslintrc';
 import js from '@eslint/js';
 import prettier from 'eslint-plugin-prettier';
-import { defineConfig } from 'eslint/config';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -14,16 +13,24 @@ const compat = new FlatCompat({
   allConfig: js.configs.all,
 });
 
-export default defineConfig([
+export default [
   {
-    extends: fixupConfigRules(compat.extends('@react-native', 'prettier')),
-    plugins: { prettier },
+    ignores: ['node_modules/**', 'lib/**', 'example/**', 'coverage/**', 'build/**', '.yarn/**', '*.config.js', '*.config.mjs'],
+  },
+  ...fixupConfigRules(compat.extends('@react-native')),
+  {
+    plugins: {
+      prettier,
+    },
     rules: {
       'react/react-in-jsx-scope': 'off',
-      'prettier/prettier': 'error',
+      'prettier/prettier': ['error', {
+        quoteProps: 'consistent',
+        singleQuote: true,
+        tabWidth: 2,
+        trailingComma: 'es5',
+        useTabs: false,
+      }],
     },
   },
-  {
-    ignores: ['node_modules/', 'lib/'],
-  },
-]);
+];

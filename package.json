@@ -1,7 +1,7 @@
 {
   "name": "react-native-image-code-scanner",
   "version": "0.1.0",
-  "description": "A lightweight, high-performance React Native library for scanning QR codes and barcodes from images with advanced preprocessing options.",
+  "description": "A lightweight, high-performance React Native library for scanning QR codes and barcodes from images with automatic preprocessing for optimal recognition.",
   "main": "./lib/module/index.js",
   "types": "./lib/typescript/src/index.d.ts",
   "exports": {
@@ -44,6 +44,7 @@
     "prepare": "bob build",
     "prepublishOnly": "yarn clean && yarn typecheck && yarn lint && yarn test && yarn build",
     "build": "bob build",
+    "pre-publish": "./scripts/pre-publish-checklist.sh",
     "release": "release-it",
     "release:dry": "release-it --dry-run",
     "release:beta": "release-it --preRelease=beta"
@@ -82,29 +83,29 @@
     "@eslint/eslintrc": "^3.3.0",
     "@eslint/js": "^9.22.0",
     "@evilmartians/lefthook": "^1.5.0",
-    "@react-native-community/cli": "15.0.0-alpha.2",
+    "@react-native-community/cli": "15.0.0",
     "@react-native/babel-preset": "0.79.2",
-    "@react-native/eslint-config": "^0.78.0",
+    "@react-native/eslint-config": "^0.79.2",
     "@release-it/conventional-changelog": "^9.0.2",
     "@types/jest": "^29.5.5",
-    "@types/react": "^19.0.0",
+    "@types/react": "^18.3.12",
     "commitlint": "^19.6.1",
     "del-cli": "^5.1.0",
-    "eslint": "^9.22.0",
-    "eslint-config-prettier": "^10.1.1",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.3",
     "jest": "^29.7.0",
     "prettier": "^3.0.3",
-    "react": "19.0.0",
+    "react": "18.3.1",
     "react-native": "0.79.2",
     "react-native-builder-bob": "^0.40.13",
     "release-it": "^17.10.0",
     "turbo": "^1.10.7",
-    "typescript": "^5.8.3"
+    "typescript": "^5.3.0"
   },
   "peerDependencies": {
-    "react": "*",
-    "react-native": "*"
+    "react": ">=17.0.0",
+    "react-native": ">=0.70.0"
   },
   "workspaces": [
     "example"

@@ -18,17 +18,17 @@
   </a>
 </p>
 
-A lightweight, high-performance React Native library for scanning QR codes and barcodes from images with advanced preprocessing options. Built with native performance in mind using iOS Vision Framework and Android ML Kit.
+A lightweight, high-performance React Native library for scanning QR codes and barcodes from images with automatic preprocessing for optimal recognition. Built with native performance in mind using iOS Vision Framework and Android ML Kit.
 
 ## ✨ Features
 
 - **🚀 High Performance**: Native implementation using iOS Vision Framework and Google ML Kit
 - **📱 Cross-Platform**: Support for both iOS and Android
 - **🎯 Multiple Formats**: Supports 13+ barcode formats including QR, Code128, EAN, UPC, and more
-- **🔧 Advanced Preprocessing**: Built-in image enhancement for better recognition rates
+- **🔧 Automatic Preprocessing**: Built-in image enhancement automatically applied for better recognition
 - **⚡ New Architecture Ready**: Full support for React Native's New Architecture (Turbo Modules)
 - **📦 Lightweight**: Minimal dependencies, optimized bundle size
-- **🔄 Smart Retry Logic**: Intelligent preprocessing with rotation, grayscale, and contrast enhancement
+- **🔄 Smart Recognition**: Automatic rotation, grayscale conversion, and contrast enhancement
 - **🔒 Type Safe**: Full TypeScript support with comprehensive type definitions
 - **🛠️ Expo Compatible**: Works with Expo (requires prebuild for native functionality)
 
@@ -50,7 +50,22 @@ A lightweight, high-performance React Native library for scanning QR codes and b
 | ITF | ✅ | ✅ |
 | Codabar | ✅ | ✅ |
 
-## 🚀 Installation
+## Compatibility
+
+| React Native Version | Package Version | Status |
+|---------------------|-----------------|--------|
+| 0.70.x - 0.74.x     | ✅ 0.1.x       | Fully Supported |
+| 0.75.x - 0.79.x     | ✅ 0.1.x       | Fully Supported (including New Architecture) |
+| 0.80.x+             | ✅ 0.1.x       | Fully Supported (when released) |
+
+### Requirements
+- **React Native**: >=0.70.0
+- **React**: >=17.0.0
+- **iOS**: 13.4+
+- **Android**: minSdkVersion 21+
+- **Node**: >=18
+
+## Installation
 
 ```bash
 npm install react-native-image-code-scanner
@@ -140,7 +155,7 @@ const scanMultipleFormats = async (imagePath: string) => {
         BarcodeFormat.CODE_128,
         BarcodeFormat.EAN_13,
       ],
-      // Preprocessing is always enabled automatically for better recognition
+      // Automatic preprocessing is enabled by default for optimal recognition
     });
     
     console.log('Found barcodes:', results);
@@ -150,29 +165,16 @@ const scanMultipleFormats = async (imagePath: string) => {
 };
 ```
 
-### Platform-Specific Preprocessing
+### How It Works
 
-```typescript
-const scanWithPlatformOverrides = async (imagePath: string) => {
-  const results = await ImageCodeScanner.scan({
-    path: imagePath,
-    formats: [BarcodeFormat.QR_CODE],
-    preprocessing: {
-      enhanceContrast: true,
-      grayscale: true,
-      rotations: false,  // Default for both platforms
-    },
-    platformOverrides: {
-      ios: {
-        rotations: true,  // Enable rotations only on iOS
-      },
-      android: {
-        enhanceContrast: false,  // Disable contrast enhancement on Android
-      },
-    },
-  });
-};
-```
+The scanner automatically applies multiple preprocessing techniques to maximize recognition:
+
+1. **Original Image**: First scan attempt
+2. **Grayscale Conversion**: Improves detection in colored backgrounds
+3. **Contrast Enhancement**: Better recognition in low-contrast images
+4. **Rotation Attempts**: Tries 0°, 90°, 180°, and 270° rotations
+
+As soon as a barcode is detected with any technique, the result is returned immediately for optimal performance.
 
 ### With Image Picker
 
@@ -192,7 +194,7 @@ const scanFromGallery = async () => {
     const scanResults = await ImageCodeScanner.scan({
       path: imagePath,
       formats: [ImageCodeScanner.BarcodeFormat.QR_CODE],
-      preprocessing: true,  // Enable all preprocessing
+      // Automatic preprocessing is enabled by default
     });
     
     if (scanResults.length > 0) {
@@ -221,7 +223,7 @@ const scanFromGallery = async () => {
     const scanResults = await ImageCodeScanner.scan({
       path: imagePath,
       formats: [ImageCodeScanner.BarcodeFormat.QR_CODE],
-      preprocessing: true,  // Enable all preprocessing
+      // Automatic preprocessing is enabled by default
     });
     
     if (scanResults.length > 0) {
@@ -236,13 +238,13 @@ const scanFromGallery = async () => {
 ```typescript
 import ImageCodeScanner, { BarcodeFormat } from 'react-native-image-code-scanner';
 
-// Scan with all preprocessing enabled and multiple formats
+// Scan with automatic preprocessing and multiple formats
 const scanEverything = async (imagePath: string) => {
   try {
     const results = await ImageCodeScanner.scan({
       path: imagePath,
       formats: Object.values(BarcodeFormat), // All supported formats
-      preprocessing: true, // Enable all preprocessing options
+      // Automatic preprocessing is enabled by default
     });
     
     console.log(`Found ${results.length} barcodes:`, results);
@@ -271,7 +273,7 @@ Scans an image for barcodes with automatic preprocessing enabled.
 ```typescript
 interface ScanOptions {
   path: string;                          // Path to the image file
-  formats?: BarcodeFormat[];             // Array of barcode formats to detect
+  formats?: BarcodeFormat[];             // Array of barcode formats to detect (default: QR_CODE)
 }
 ```
 

@@ -3,7 +3,9 @@
 const fs = require('fs');
 const path = require('path');
 
-console.log('🔍 Validating React Native Image Code Scanner package structure...\n');
+console.log(
+  '🔍 Validating React Native Image Code Scanner package structure...\n'
+);
 
 const requiredFiles = [
   'package.json',
@@ -33,7 +35,7 @@ const errors = [];
 const warnings = [];
 
 // Check required files
-requiredFiles.forEach(file => {
+requiredFiles.forEach((file) => {
   const filePath = path.join(__dirname, '..', file);
   if (!fs.existsSync(filePath)) {
     errors.push(`❌ Missing required file: ${file}`);
@@ -44,17 +46,37 @@ requiredFiles.forEach(file => {
 
 // Check package.json configuration
 try {
-  const packageJson = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8'));
-  
-  if (!packageJson.name) errors.push('❌ package.json: missing "name" field');
-  if (!packageJson.version) errors.push('❌ package.json: missing "version" field');
-  if (!packageJson.main) errors.push('❌ package.json: missing "main" field');
-  if (!packageJson.types) errors.push('❌ package.json: missing "types" field');
-  if (!packageJson.repository) warnings.push('⚠️  package.json: missing "repository" field');
-  if (!packageJson.keywords || packageJson.keywords.length === 0) warnings.push('⚠️  package.json: missing or empty "keywords" field');
-  if (!packageJson.peerDependencies) errors.push('❌ package.json: missing "peerDependencies" field');
-  if (!packageJson.codegenConfig) warnings.push('⚠️  package.json: missing "codegenConfig" for New Architecture support');
-  
+  const packageJson = JSON.parse(
+    fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8')
+  );
+
+  if (!packageJson.name) {
+    errors.push('❌ package.json: missing "name" field');
+  }
+  if (!packageJson.version) {
+    errors.push('❌ package.json: missing "version" field');
+  }
+  if (!packageJson.main) {
+    errors.push('❌ package.json: missing "main" field');
+  }
+  if (!packageJson.types) {
+    errors.push('❌ package.json: missing "types" field');
+  }
+  if (!packageJson.repository) {
+    warnings.push('⚠️  package.json: missing "repository" field');
+  }
+  if (!packageJson.keywords || packageJson.keywords.length === 0) {
+    warnings.push('⚠️  package.json: missing or empty "keywords" field');
+  }
+  if (!packageJson.peerDependencies) {
+    errors.push('❌ package.json: missing "peerDependencies" field');
+  }
+  if (!packageJson.codegenConfig) {
+    warnings.push(
+      '⚠️  package.json: missing "codegenConfig" for New Architecture support'
+    );
+  }
+
   console.log('✅ package.json structure validated');
 } catch (error) {
   errors.push(`❌ Error reading package.json: ${error.message}`);
@@ -62,7 +84,7 @@ try {
 
 // Check for unwanted files
 const unwantedDirs = ['modules', 'build', 'lib', '.turbo'];
-unwantedDirs.forEach(dir => {
+unwantedDirs.forEach((dir) => {
   if (fs.existsSync(path.join(__dirname, '..', dir))) {
     warnings.push(`⚠️  Found directory that should be cleaned: ${dir}`);
   }
@@ -78,12 +100,12 @@ if (errors.length === 0 && warnings.length === 0) {
 } else {
   if (errors.length > 0) {
     console.log('\n❌ ERRORS (must fix before publishing):');
-    errors.forEach(error => console.log('  ' + error));
+    errors.forEach((error) => console.log('  ' + error));
   }
-  
+
   if (warnings.length > 0) {
     console.log('\n⚠️  WARNINGS (recommended to fix):');
-    warnings.forEach(warning => console.log('  ' + warning));
+    warnings.forEach((warning) => console.log('  ' + warning));
   }
 }
 

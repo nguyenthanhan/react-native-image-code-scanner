@@ -1,5 +1,3 @@
-import {Platform} from 'react-native';
-
 import ImageCodeScanner from './NativeImageCodeScanner';
 
 // Common formats supported by both iOS Vision and Android ML Kit
@@ -26,18 +24,20 @@ export interface ScanOptions {
 
 const ImageCodeScannerModule = {
   scan: (options: ScanOptions): Promise<string[]> => {
-    const {
-      path,
-      formats = [BarcodeFormat.QR_CODE],
-    } = options;
+    const { path, formats = [BarcodeFormat.QR_CODE] } = options;
 
-    // Preprocessing is always enabled automatically in native implementations
-    // for better recognition rates (grayscale, contrast enhancement, rotations)
-    
+    // Note: Preprocessing is always enabled in native implementation
+    // The native code automatically tries multiple preprocessing techniques
+    const nativeOptions = {
+      enhanceContrast: true,
+      convertToGrayscale: true,
+      tryRotations: true,
+    };
+
     return ImageCodeScanner.scanFromPath(
       path,
-      formats.map(f => f.toString()),
-      {}, // Empty options object since preprocessing is always enabled
+      formats.map((f) => f.toString()),
+      nativeOptions
     );
   },
   BarcodeFormat,

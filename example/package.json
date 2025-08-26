@@ -17,17 +17,15 @@
   },
   "dependencies": {
     "expo": "~52.0.0",
-    "expo-status-bar": "~2.0.0",
-    "expo-image-picker": "~16.0.0",
-    "expo-permissions": "~18.0.0",
+    "expo-image-picker": "~16.0.3",
+    "expo-status-bar": "~2.0.1",
     "react": "18.3.1",
-    "react-native": "0.76.3",
+    "react-native": "0.79.2",
     "react-native-image-code-scanner": "file:../"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
     "@types/react": "~18.3.12",
-    "@types/react-native": "~0.76.0",
     "eslint": "^8.56.0",
     "typescript": "^5.3.0"
   },
