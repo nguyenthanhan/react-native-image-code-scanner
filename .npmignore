@@ -1,0 +1,64 @@
+# Source files (we publish built files)
+src/
+*.ts
+*.tsx
+!lib/**/*
+
+# Config files
+tsconfig.json
+tsconfig.build.json
+babel.config.js
+eslint.config.mjs
+.eslintrc
+.prettierrc
+lefthook.yml
+turbo.json
+.editorconfig
+.nvmrc
+.watchmanconfig
+.yarnrc.yml
+
+# Build and development
+example/
+modules/
+android/build/
+ios/build/
+.turbo/
+.yarn/
+.bundle/
+
+# Testing
+__tests__/
+__fixtures__/
+__mocks__/
+*.test.*
+*.spec.*
+coverage/
+jest.config.*
+
+# Git and GitHub
+.git/
+.github/
+.gitignore
+.gitattributes
+
+# Documentation source files (keep compiled docs)
+CONTRIBUTING.md
+CODE_OF_CONDUCT.md
+
+# Misc
+*.log
+*.map
+.DS_Store
+Thumbs.db
+node_modules/
+yarn-error.log
+npm-debug.log
+*.tgz
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~

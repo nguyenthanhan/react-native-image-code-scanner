@@ -1,0 +1,37 @@
+{
+  "expo": {
+    "name": "ImageCodeScannerExample",
+    "slug": "image-code-scanner-example",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.imagecodescanner.example",
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app needs access to camera to scan barcodes",
+        "NSPhotoLibraryUsageDescription": "This app needs access to photo library to select images for barcode scanning"
+      }
+    },
+    "android": {
+      "package": "com.imagecodescanner.example",
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
+    },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "The app accesses your photos to let you select images for barcode scanning.",
+          "cameraPermission": "The app accesses your camera to let you take photos for barcode scanning."
+        }
+      ]
+    ]
+  }
+}
