@@ -159,18 +159,6 @@ jobs:
         with:
           xcode-version: ${{ env.XCODE_VERSION }}
 
-      - name: Install cocoapods
-        if: env.turbo_cache_hit != 1
-        run: |
-          cd example
-          if [ -f "Gemfile" ]; then
-            bundle install
-            bundle exec pod repo update --verbose
-            bundle exec pod install --project-directory=ios
-          else
-            pod install --project-directory=ios
-          fi
-
       - name: Build example for iOS
         env:
           CI: 1
