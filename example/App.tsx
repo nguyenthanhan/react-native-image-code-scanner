@@ -23,12 +23,12 @@ interface ScanResult {
 }
 
 const BARCODE_FORMATS = [
-  { key: BarcodeFormat.QR_CODE, label: 'QR Code', enabled: true },
-  { key: BarcodeFormat.CODE_128, label: 'Code 128', enabled: false },
-  { key: BarcodeFormat.CODE_39, label: 'Code 39', enabled: false },
-  { key: BarcodeFormat.EAN_13, label: 'EAN-13', enabled: false },
-  { key: BarcodeFormat.PDF_417, label: 'PDF417', enabled: false },
-  { key: BarcodeFormat.DATA_MATRIX, label: 'Data Matrix', enabled: false },
+  { key: BarcodeFormat.QR_CODE, label: 'QR Code' },
+  { key: BarcodeFormat.CODE_128, label: 'Code 128' },
+  { key: BarcodeFormat.CODE_39, label: 'Code 39' },
+  { key: BarcodeFormat.EAN_13, label: 'EAN-13' },
+  { key: BarcodeFormat.PDF_417, label: 'PDF417' },
+  { key: BarcodeFormat.DATA_MATRIX, label: 'Data Matrix' },
 ];
 
 export default function App() {

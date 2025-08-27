@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.0] - 2025-08-27
 
 ### Added
+
 - Initial release of React Native Image Code Scanner
 - Native implementation for iOS using Vision Framework
 - Native implementation for Android using ML Kit
@@ -18,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Contrast enhancement
   - Grayscale conversion
   - Multiple rotation attempts (0°, 90°, 180°, 270°)
-- **Ultra-simple API** - just pass image path and formats, preprocessing is always automatic
+- **Ultra-simple API** - just pass image path and formats, preprocessing is automatic by default
 - Full support for React Native's New Architecture (Turbo Modules)
 - TypeScript support with complete type definitions
 - Comprehensive documentation and examples
@@ -27,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cross-platform example app (iOS, Android, Web)
 
 ### Features
+
 - Lightweight and performant native implementation
 - **Automatic preprocessing** enabled by default for best results
 - Smart retry logic with multiple image enhancement techniques
@@ -38,6 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Performance metrics** and timing measurements
 
 ### Example App Features
+
 - Modern Expo-based example application
 - Barcode format selection UI with real-time toggles
 - Automatic preprocessing info with optional disable switch

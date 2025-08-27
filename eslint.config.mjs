@@ -15,22 +15,34 @@ const compat = new FlatCompat({
 
 export default [
   {
-    ignores: ['node_modules/**', 'lib/**', 'example/**', 'coverage/**', 'build/**', '.yarn/**', '*.config.js', '*.config.mjs'],
+    ignores: [
+      'node_modules/**',
+      'lib/**',
+      'example/**',
+      'coverage/**',
+      'build/**',
+      '.yarn/**',
+      '*.config.js',
+      '*.config.mjs',
+    ],
   },
-  ...fixupConfigRules(compat.extends('@react-native')),
+  ...fixupConfigRules(compat.extends('@react-native', 'prettier')),
   {
     plugins: {
       prettier,
     },
     rules: {
       'react/react-in-jsx-scope': 'off',
-      'prettier/prettier': ['error', {
-        quoteProps: 'consistent',
-        singleQuote: true,
-        tabWidth: 2,
-        trailingComma: 'es5',
-        useTabs: false,
-      }],
+      'prettier/prettier': [
+        'error',
+        {
+          quoteProps: 'consistent',
+          singleQuote: true,
+          tabWidth: 2,
+          trailingComma: 'es5',
+          useTabs: false,
+        },
+      ],
     },
   },
 ];

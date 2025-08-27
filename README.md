@@ -379,7 +379,7 @@ npm run build:ios    # or npm run build:android
 The example app demonstrates:
 
 - Image selection from camera and gallery using Expo Image Picker
-- Real-time preprocessing option toggles
+- Automatic preprocessing (always on; no manual toggles required)
 - Multiple barcode format selection
 - Performance timing measurements
 - Beautiful, responsive UI

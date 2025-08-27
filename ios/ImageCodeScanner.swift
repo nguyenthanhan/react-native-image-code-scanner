@@ -10,6 +10,9 @@ class ImageCodeScanner: NSObject, RCTBridgeModule {
   
   static func moduleName() -> String! { "ImageCodeScanner" }
   static func requiresMainQueueSetup() -> Bool { false }
+  
+  // Shared CIContext for reuse across image processing operations
+  private let sharedCIContext = CIContext(options: nil)
 
   // MARK: - Image Preprocessing Methods
   
@@ -24,8 +27,7 @@ class ImageCodeScanner: NSObject, RCTBridgeModule {
     
     guard let outputImage = filter?.outputImage else { return nil }
     
-    let context = CIContext(options: nil)
-    guard let cgImage = context.createCGImage(outputImage, from: outputImage.extent) else { return nil }
+    guard let cgImage = sharedCIContext.createCGImage(outputImage, from: outputImage.extent) else { return nil }
     
     return UIImage(cgImage: cgImage)
   }
@@ -42,8 +44,7 @@ class ImageCodeScanner: NSObject, RCTBridgeModule {
     
     guard let outputImage = filter?.outputImage else { return nil }
     
-    let context = CIContext(options: nil)
-    guard let cgImage = context.createCGImage(outputImage, from: outputImage.extent) else { return nil }
+    guard let cgImage = sharedCIContext.createCGImage(outputImage, from: outputImage.extent) else { return nil }
     
     return UIImage(cgImage: cgImage)
   }
@@ -77,15 +78,18 @@ class ImageCodeScanner: NSObject, RCTBridgeModule {
   }
 
   private func scaleImageIfNeeded(_ image: UIImage, maxDimension: CGFloat) -> UIImage {
-    let w = image.size.width, h = image.size.height
-    guard max(w, h) > maxDimension else { return image }
-    let scale = maxDimension / max(w, h)
-    let newSize = CGSize(width: floor(w * scale), height: floor(h * scale))
+    let pixelW = CGFloat(image.cgImage?.width ?? Int(image.size.width * image.scale))
+    let pixelH = CGFloat(image.cgImage?.height ?? Int(image.size.height * image.scale))
+    guard max(pixelW, pixelH) > maxDimension else { return image }
+    let ratio = maxDimension / max(pixelW, pixelH)
+    let newW = floor(pixelW * ratio), newH = floor(pixelH * ratio)
+    let newSizePx = CGSize(width: newW, height: newH)
     let format = UIGraphicsImageRendererFormat.default()
-    format.scale = 1
-    return UIGraphicsImageRenderer(size: newSize, format: format).image { _ in
-      image.draw(in: CGRect(origin: .zero, size: newSize))
+    format.scale = 1 // render size is in pixels
+    let rendered = UIGraphicsImageRenderer(size: newSizePx, format: format).image { _ in
+      image.draw(in: CGRect(origin: .zero, size: newSizePx))
     }
+    return UIImage(cgImage: rendered.cgImage!, scale: image.scale, orientation: image.imageOrientation)
   }
 
   private func cgImagePropertyOrientation(from o: UIImage.Orientation) -> CGImagePropertyOrientation {
@@ -144,25 +148,25 @@ class ImageCodeScanner: NSObject, RCTBridgeModule {
     var imagesToTry: [(String, UIImage)] = [("Original", baseImage)]
 
     // Always add grayscale version
-    if let grayscaleImage = convertToGrayscale(originalImage) {
+    if let grayscaleImage = convertToGrayscale(baseImage) {
       imagesToTry.append(("Grayscale", grayscaleImage))
       print("ImageCodeScanner iOS - Added grayscale version")
     }
     
     // Always add contrast enhanced version
-    if let contrastImage = enhanceContrast(originalImage) {
+    if let contrastImage = enhanceContrast(baseImage) {
       imagesToTry.append(("Enhanced contrast", contrastImage))
       print("ImageCodeScanner iOS - Added contrast enhanced version")
     }
     
     // Always add rotated versions
-    if let rotated90 = rotateImage(originalImage, degrees: 90) {
+    if let rotated90 = rotateImage(baseImage, degrees: 90) {
       imagesToTry.append(("Rotated 90°", rotated90))
     }
-    if let rotated180 = rotateImage(originalImage, degrees: 180) {
+    if let rotated180 = rotateImage(baseImage, degrees: 180) {
       imagesToTry.append(("Rotated 180°", rotated180))
     }
-    if let rotated270 = rotateImage(originalImage, degrees: 270) {
+    if let rotated270 = rotateImage(baseImage, degrees: 270) {
       imagesToTry.append(("Rotated 270°", rotated270))
     }
     print("ImageCodeScanner iOS - Added rotated versions")
@@ -289,35 +293,5 @@ class ImageCodeScanner: NSObject, RCTBridgeModule {
     tryScanning(images: imagesToTry, index: 0)
   }
   
-  // Fallback method for QR code detection using Core Image
-  private func tryQRCodeFallback(image: UIImage, 
-                                safeResolve: @escaping (Any) -> Void, 
-                                safeReject: @escaping (String, String, Error?) -> Void) {
-    
-    guard let ciImage = CIImage(image: image) else {
-      safeReject("INVALID_IMAGE", "Cannot create CIImage for fallback", nil)
-      return
-    }
-    
-    // Create QR code detector
-    let detector = CIDetector(ofType: CIDetectorTypeQRCode, context: nil, options: [
-      CIDetectorAccuracy: CIDetectorAccuracyHigh
-    ])
-    
-    guard let detector = detector else {
-      safeReject("DETECTOR_ERROR", "Cannot create QR code detector", nil)
-      return
-    }
-    
-    // Detect QR codes
-    let features = detector.features(in: ciImage)
-    
-    // Extract QR code strings
-    let qrStrings = features.compactMap { feature -> String? in
-      guard let qrFeature = feature as? CIQRCodeFeature else { return nil }
-      return qrFeature.messageString
-    }
-    
-    safeResolve(qrStrings)
-  }
+
 }
