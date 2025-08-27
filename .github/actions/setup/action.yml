@@ -29,8 +29,8 @@ runs:
     - name: Install dependencies
       if: steps.yarn-cache.outputs.cache-hit != 'true'
       run: |
-        # Try immutable install first, fallback to regular install if needed
-        yarn install --immutable --mode=update-lockfile || yarn install
+        # Use immutable install for Yarn v3
+        yarn install --immutable
       shell: bash
       env:
         NODE_OPTIONS: --max-old-space-size=4096
