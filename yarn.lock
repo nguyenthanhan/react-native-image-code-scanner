@@ -12109,22 +12109,12 @@ __metadata:
     expo-image-picker: ~16.0.3
     expo-status-bar: ~2.0.1
     react: 18.3.1
-    react-native-image-code-scanner: "file:../"
+    react-native-image-code-scanner: "workspace:*"
     typescript: ^5.3.0
   languageName: unknown
   linkType: soft
 
-"react-native-image-code-scanner@file:../::locator=react-native-image-code-scanner-example%40workspace%3Aexample":
-  version: 0.1.0
-  resolution: "react-native-image-code-scanner@file:../#../::hash=b7415d&locator=react-native-image-code-scanner-example%40workspace%3Aexample"
-  peerDependencies:
-    react: ">=17.0.0"
-    react-native: ">=0.70.0"
-  checksum: cc68cff14b0fb06e530bd178658626a1d5d286cacebd325da78b514b268024da089dee209c6c3768d7a3234caa12ca815efae48dda17dd3d918ae5f877d2e573
-  languageName: node
-  linkType: hard
-
-"react-native-image-code-scanner@workspace:.":
+"react-native-image-code-scanner@workspace:*, react-native-image-code-scanner@workspace:.":
   version: 0.0.0-use.local
   resolution: "react-native-image-code-scanner@workspace:."
   dependencies:
