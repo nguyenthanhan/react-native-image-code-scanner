@@ -12,8 +12,8 @@
     "setup": "expo install",
     "prebuild": "expo prebuild",
     "prebuild:clean": "expo prebuild --clean",
-    "build:android": "expo prebuild && expo run:android",
-    "build:ios": "expo prebuild && expo run:ios"
+    "build:android": "CI=1 expo prebuild && expo run:android",
+    "build:ios": "CI=1 expo prebuild && expo run:ios"
   },
   "dependencies": {
     "expo": "~52.0.0",
