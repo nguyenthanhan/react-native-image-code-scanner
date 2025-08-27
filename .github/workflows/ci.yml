@@ -110,6 +110,7 @@ jobs:
       - name: Build example for Android
         env:
           JAVA_OPTS: '-XX:MaxHeapSize=6g'
+          CI: 1
         run: |
           yarn turbo run build:android --cache-dir="${{ env.TURBO_CACHE_DIR }}"
 
@@ -166,5 +167,7 @@ jobs:
           yarn install --immutable
 
       - name: Build example for iOS
+        env:
+          CI: 1
         run: |
           yarn turbo run build:ios --cache-dir="${{ env.TURBO_CACHE_DIR }}"
