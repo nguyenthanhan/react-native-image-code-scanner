@@ -12116,11 +12116,11 @@ __metadata:
 
 "react-native-image-code-scanner@file:../::locator=react-native-image-code-scanner-example%40workspace%3Aexample":
   version: 0.1.0
-  resolution: "react-native-image-code-scanner@file:../#../::hash=3b9682&locator=react-native-image-code-scanner-example%40workspace%3Aexample"
+  resolution: "react-native-image-code-scanner@file:../#../::hash=b7415d&locator=react-native-image-code-scanner-example%40workspace%3Aexample"
   peerDependencies:
     react: ">=17.0.0"
     react-native: ">=0.70.0"
-  checksum: 867f7818b2e0dc8b0bd1d95121977e363d66dd9fef7f20e4bfdcc89729b14350c6cdea3798c8f025555a4cf6005a6c4a7f9a96416e8a77c72eaa647b70081143
+  checksum: cc68cff14b0fb06e530bd178658626a1d5d286cacebd325da78b514b268024da089dee209c6c3768d7a3234caa12ca815efae48dda17dd3d918ae5f877d2e573
   languageName: node
   linkType: hard
 

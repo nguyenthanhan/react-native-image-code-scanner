@@ -10,6 +10,12 @@ on:
     types:
       - checks_requested
 
+env:
+  # Increase Node.js memory to prevent allocation errors
+  NODE_OPTIONS: --max-old-space-size=4096
+  # Ensure Yarn uses immutable installs
+  YARN_ENABLE_IMMUTABLE_INSTALLS: true
+
 jobs:
   lint:
     runs-on: ubuntu-latest
