@@ -29,7 +29,7 @@ class ImageCodeScanner: NSObject, RCTBridgeModule {
     
     guard let cgImage = sharedCIContext.createCGImage(outputImage, from: outputImage.extent) else { return nil }
     
-    return UIImage(cgImage: cgImage)
+    return UIImage(cgImage: cgImage, scale: image.scale, orientation: image.imageOrientation)
   }
   
   private func enhanceContrast(_ image: UIImage) -> UIImage? {
@@ -46,7 +46,7 @@ class ImageCodeScanner: NSObject, RCTBridgeModule {
     
     guard let cgImage = sharedCIContext.createCGImage(outputImage, from: outputImage.extent) else { return nil }
     
-    return UIImage(cgImage: cgImage)
+    return UIImage(cgImage: cgImage, scale: image.scale, orientation: image.imageOrientation)
   }
   
   private func rotateImage(_ image: UIImage, degrees: CGFloat) -> UIImage? {
