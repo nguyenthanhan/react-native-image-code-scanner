@@ -44,7 +44,6 @@
     "prepare": "bob build",
     "prepublishOnly": "yarn clean && yarn typecheck && yarn lint && yarn test && yarn build",
     "build": "bob build",
-    "pre-publish": "./scripts/pre-publish-checklist.sh",
     "release": "release-it",
     "release:dry": "release-it --dry-run",
     "release:beta": "release-it --preRelease=beta"
