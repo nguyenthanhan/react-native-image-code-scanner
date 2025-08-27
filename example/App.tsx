@@ -211,11 +211,13 @@ export default function App() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>3. Automatic Preprocessing</Text>
           <Text style={styles.preprocessingInfo}>
-            The scanner automatically applies image enhancements for optimal recognition:
-            {"\n"}• Contrast enhancement
-            {"\n"}• Grayscale conversion  
-            {"\n"}• Multiple rotation attempts (0°, 90°, 180°, 270°)
-            {"\n"}\nThese optimizations ensure the best possible barcode detection rates.
+            The scanner automatically applies image enhancements for optimal
+            recognition:
+            {'\n'}• Contrast enhancement
+            {'\n'}• Grayscale conversion
+            {'\n'}• Multiple rotation attempts (0°, 90°, 180°, 270°)
+            {'\n'}\nThese optimizations ensure the best possible barcode
+            detection rates.
           </Text>
         </View>
 

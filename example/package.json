@@ -20,7 +20,6 @@
     "expo-image-picker": "~16.0.3",
     "expo-status-bar": "~2.0.1",
     "react": "18.3.1",
-    "react-native": "0.79.2",
     "react-native-image-code-scanner": "file:../"
   },
   "devDependencies": {

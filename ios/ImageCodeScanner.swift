@@ -6,8 +6,11 @@ import CoreImage
 import CoreGraphics
 
 @objc(ImageCodeScanner)
-class ImageCodeScanner: NSObject {
+class ImageCodeScanner: NSObject, RCTBridgeModule {
   
+  static func moduleName() -> String! { "ImageCodeScanner" }
+  static func requiresMainQueueSetup() -> Bool { false }
+
   // MARK: - Image Preprocessing Methods
   
   private func convertToGrayscale(_ image: UIImage) -> UIImage? {
@@ -73,6 +76,32 @@ class ImageCodeScanner: NSObject {
     return UIGraphicsGetImageFromCurrentImageContext()
   }
 
+  private func scaleImageIfNeeded(_ image: UIImage, maxDimension: CGFloat) -> UIImage {
+    let w = image.size.width, h = image.size.height
+    guard max(w, h) > maxDimension else { return image }
+    let scale = maxDimension / max(w, h)
+    let newSize = CGSize(width: floor(w * scale), height: floor(h * scale))
+    let format = UIGraphicsImageRendererFormat.default()
+    format.scale = 1
+    return UIGraphicsImageRenderer(size: newSize, format: format).image { _ in
+      image.draw(in: CGRect(origin: .zero, size: newSize))
+    }
+  }
+
+  private func cgImagePropertyOrientation(from o: UIImage.Orientation) -> CGImagePropertyOrientation {
+    switch o {
+    case .up: return .up
+    case .down: return .down
+    case .left: return .left
+    case .right: return .right
+    case .upMirrored: return .upMirrored
+    case .downMirrored: return .downMirrored
+    case .leftMirrored: return .leftMirrored
+    case .rightMirrored: return .rightMirrored
+    @unknown default: return .up
+    }
+  }
+
   @objc(scanFromPath:formats:options:resolver:rejecter:)
   func scanFromPath(_ path: String,
                     formats: [String],
@@ -84,16 +113,19 @@ class ImageCodeScanner: NSObject {
     
     // Use atomic flag to prevent multiple promise calls
     var hasResolved = false
-    
+    let resolveQueue = DispatchQueue(label: "ImageCodeScanner.resolve")
+
     func safeResolve(_ result: Any) {
-      if !hasResolved {
+      resolveQueue.sync {
+        guard !hasResolved else { return }
         hasResolved = true
         resolver(result)
       }
     }
-    
+
     func safeReject(_ code: String, _ message: String, _ error: Error?) {
-      if !hasResolved {
+      resolveQueue.sync {
+        guard !hasResolved else { return }
         hasResolved = true
         rejecter(code, message, error)
       }
@@ -107,9 +139,10 @@ class ImageCodeScanner: NSObject {
       return
     }
     
+    let baseImage = scaleImageIfNeeded(originalImage, maxDimension: 2048)
     // Prepare images to try - always try all preprocessing options
-    var imagesToTry: [(String, UIImage)] = [("Original", originalImage)]
-    
+    var imagesToTry: [(String, UIImage)] = [("Original", baseImage)]
+
     // Always add grayscale version
     if let grayscaleImage = convertToGrayscale(originalImage) {
       imagesToTry.append(("Grayscale", grayscaleImage))
@@ -152,7 +185,7 @@ class ImageCodeScanner: NSObject {
       case "EAN_8":
         symbologies.append(.ean8)
       case "UPC_A":
-        symbologies.append(.upce) // Vision uses UPCE for UPC-A
+        symbologies.append(contentsOf: [.ean13, .upce])  // UPC-A via EAN-13 + UPC-E
       case "UPC_E":
         symbologies.append(.upce)
       case "PDF_417":
@@ -233,8 +266,12 @@ class ImageCodeScanner: NSObject {
       request.symbologies = symbologies
       
       // Create handler and perform request
-      let handler = VNImageRequestHandler(cgImage: cgImage, options: [:])
-      
+      let handler = VNImageRequestHandler(
+        cgImage: cgImage,
+        orientation: cgImagePropertyOrientation(from: currentImage.imageOrientation),
+        options: [:]
+      )
+
       DispatchQueue.global(qos: .userInitiated).async {
         do {
           try handler.perform([request])

@@ -179,11 +179,20 @@ export default function App() {
                 value={selectedFormats.includes(format.key)}
                 onValueChange={(value) => {
                   if (value) {
-                    setSelectedFormats((prev) => [...prev, format.key]);
-                  } else {
                     setSelectedFormats((prev) =>
-                      prev.filter((f) => f !== format.key)
+                      prev.includes(format.key) ? prev : [...prev, format.key]
                     );
+                  } else {
+                    setSelectedFormats((prev) => {
+                      if (prev.length === 1) {
+                        Alert.alert(
+                          'Format Required',
+                          'At least one format must be selected'
+                        );
+                        return prev;
+                      }
+                      return prev.filter((f) => f !== format.key);
+                    });
                   }
                 }}
               />

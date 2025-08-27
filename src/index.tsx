@@ -25,6 +25,13 @@ export interface ScanOptions {
 const ImageCodeScannerModule = {
   scan: (options: ScanOptions): Promise<string[]> => {
     const { path, formats = [BarcodeFormat.QR_CODE] } = options;
+    if (!path) {
+      return Promise.reject(new Error('Image path is required'));
+    }
+    const effectiveFormats =
+      Array.isArray(formats) && formats.length > 0
+        ? formats
+        : [BarcodeFormat.QR_CODE];
 
     // Note: Preprocessing is always enabled in native implementation
     // The native code automatically tries multiple preprocessing techniques
@@ -36,7 +43,7 @@ const ImageCodeScannerModule = {
 
     return ImageCodeScanner.scanFromPath(
       path,
-      formats.map((f) => f.toString()),
+      effectiveFormats.map((f) => f.toString()),
       nativeOptions
     );
   },

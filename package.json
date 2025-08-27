@@ -44,7 +44,6 @@
     "prepare": "bob build",
     "prepublishOnly": "yarn clean && yarn typecheck && yarn lint && yarn test && yarn build",
     "build": "bob build",
-    "pre-publish": "./scripts/pre-publish-checklist.sh",
     "release": "release-it",
     "release:dry": "release-it --dry-run",
     "release:beta": "release-it --preRelease=beta"
@@ -91,7 +90,7 @@
     "@types/react": "^18.3.12",
     "commitlint": "^19.6.1",
     "del-cli": "^5.1.0",
-    "eslint": "^8.56.0",
+    "eslint": "^9.22.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.3",
     "jest": "^29.7.0",
