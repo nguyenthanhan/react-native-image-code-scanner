@@ -68,6 +68,11 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup
 
+      - name: Install example dependencies
+        run: cd example && yarn install --immutable
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+
       - name: Cache turborepo for Android
         uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
         with:
@@ -127,6 +132,11 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup
 
+      - name: Install example dependencies
+        run: cd example && yarn install --immutable
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+
       - name: Cache turborepo for iOS
         uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
         with:
@@ -149,22 +159,17 @@ jobs:
         with:
           xcode-version: ${{ env.XCODE_VERSION }}
 
-      - name: Cache Expo
-        id: expo-cache
-        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
-        with:
-          path: |
-            example/.expo
-            example/node_modules
-          key: ${{ runner.os }}-expo-${{ hashFiles('example/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-expo-
-
-      - name: Setup Expo
-        if: env.turbo_cache_hit != 1 && steps.expo-cache.outputs.cache-hit != 'true'
+      - name: Install cocoapods
+        if: env.turbo_cache_hit != 1
         run: |
           cd example
-          yarn install --immutable
+          if [ -f "Gemfile" ]; then
+            bundle install
+            bundle exec pod repo update --verbose
+            bundle exec pod install --project-directory=ios
+          else
+            pod install --project-directory=ios
+          fi
 
       - name: Build example for iOS
         env:
