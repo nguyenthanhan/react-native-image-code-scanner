@@ -1,11 +1,13 @@
 name: Publish to npm
 
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   push:
     tags:
       - 'v*.*.*'
-  release:
-    types: [published]
   workflow_dispatch:
     inputs:
       version:
@@ -28,6 +30,7 @@ jobs:
     permissions:
       contents: write
       packages: write
+      id-token: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -58,6 +61,15 @@ jobs:
       - name: Build package
         run: yarn build
 
+      - name: Verify tag matches package.json version
+        if: ${{ github.event_name == 'push' }}
+        run: |
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          if [ "v${PKG_VERSION}" != "${GITHUB_REF_NAME}" ]; then
+            echo "Tag ${GITHUB_REF_NAME} does not match package.json version v${PKG_VERSION}"
+            exit 1
+          fi
+
       - name: Set version
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.version != '' }}
         env:
@@ -71,9 +83,9 @@ jobs:
         run: |
           if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
             TAG="${NPM_DIST_TAG:-latest}"
-            npm publish --tag "$TAG"
+            npm publish --provenance --tag "$TAG"
           else
-            npm publish
+            npm publish --provenance
           fi
 
       - name: Determine release metadata
@@ -101,17 +113,28 @@ jobs:
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           echo "prerelease=$PRERELEASE" >> "$GITHUB_OUTPUT"
 
-      - name: Create GitHub Release Notes
-        if: ${{ github.event_name != 'release' }}
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ steps.meta.outputs.tag }}
-          release_name: Release ${{ steps.meta.outputs.tag }}
-          body: |
-            ## Changes
 
-            See [CHANGELOG.md](https://github.com/nguyenthanhan/react-native-image-code-scanner/blob/main/CHANGELOG.md) for details.
-          draft: false
-          prerelease: ${{ steps.meta.outputs.prerelease == 'true' }}
+      - name: Create GitHub Release
+        uses: actions/github-script@v7
+        if: ${{ github.event_name != 'release' }}
+        env:
+          TAG: ${{ steps.meta.outputs.tag }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PRERELEASE: ${{ steps.meta.outputs.prerelease }}
+        with:
+          script: |
+            const { TAG, PRERELEASE } = process.env;
+            if (!TAG) {
+              core.setFailed('TAG is empty, cannot create release.');
+            } else {
+              await github.rest.repos.createRelease({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                tag_name: TAG,
+                name: `Release ${TAG}`,
+                draft: false,
+                prerelease: PRERELEASE === 'true',
+                generate_release_notes: true,
+              });
+              core.info(`GitHub release created for ${TAG}`);
+            }

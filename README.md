@@ -5,13 +5,13 @@
     <img src="https://img.shields.io/npm/v/react-native-image-code-scanner.svg" alt="npm version">
   </a>
   <a href="https://github.com/nguyenthanhan/react-native-image-code-scanner/blob/main/LICENSE">
-    <img src="https://img.shields.io/npm/l/react-native-image-code-scanner.svg" alt="license">
+    <img src="https://img.shields.io/github/license/nguyenthanhan/react-native-image-code-scanner.svg" alt="license">
   </a>
   <a href="https://www.npmjs.com/package/react-native-image-code-scanner">
     <img src="https://img.shields.io/npm/dm/react-native-image-code-scanner.svg" alt="downloads">
   </a>
   <a href="https://github.com/nguyenthanhan/react-native-image-code-scanner/actions">
-    <img src="https://img.shields.io/github/actions/workflow/status/nguyenthanhan/react-native-image-code-scanner/ci.yml?branch=main" alt="CI Status">
+    <img src="https://img.shields.io/github/actions/workflow/status/nguyenthanhan/react-native-image-code-scanner/ci.yml" alt="CI Status">
   </a>
   <a href="https://github.com/nguyenthanhan/react-native-image-code-scanner/issues">
     <img src="https://img.shields.io/github/issues/nguyenthanhan/react-native-image-code-scanner" alt="Issues">
@@ -51,13 +51,14 @@ A lightweight, high-performance React Native library for scanning QR codes and b
 | ITF         | ✅  | ✅      |
 | Codabar     | ✅  | ✅      |
 
-## Compatibility
+### React Native Version Support
 
-| React Native Version | Package Version | Status                                       |
-| -------------------- | --------------- | -------------------------------------------- |
-| 0.70.x - 0.74.x      | ✅ 1.0.x        | Fully Supported                              |
-| 0.75.x - 0.79.x      | ✅ 1.0.x        | Fully Supported (including New Architecture) |
-| 0.80.x+              | ✅ 1.0.x        | Fully Supported (when released)              |
+| React Native    | Package Version | Architecture Support           | Status                    |
+| --------------- | --------------- | ------------------------------ | ------------------------- |
+| 0.70.x - 0.74.x | ✅ 1.0.x        | Old Architecture               | Fully Supported           |
+| 0.75.x - 0.78.x | ✅ 1.0.x        | Old & New Architecture         | Fully Supported           |
+| **0.79.x**      | ✅ **1.0.x**    | **New Architecture (default)** | **Latest - Full Support** |
+| 0.80.x+         | 🔜 1.0.x        | New Architecture               | Ready when released       |
 
 **Latest Version**: v1.0.0 - Major stable release with enhanced CI pipeline and build reliability improvements
 
@@ -109,6 +110,8 @@ For Expo projects, you'll need to prebuild your project to use native modules:
 ```bash
 # Install the library
 npm install react-native-image-code-scanner
+#or
+npx expo install react-native-image-code-scanner
 
 # Prebuild your project
 npx expo prebuild
@@ -131,10 +134,7 @@ import ImageCodeScanner from 'react-native-image-code-scanner';
 // Scan QR code from image
 const scanQRCode = async (imagePath: string) => {
   try {
-    const results = await ImageCodeScanner.scan({
-      path: imagePath,
-      formats: [ImageCodeScanner.BarcodeFormat.QR_CODE],
-    });
+    const results = await ImageCodeScanner.scan({ path: imagePath });
 
     if (results.length > 0) {
       console.log('QR Code found:', results[0]);
@@ -390,15 +390,14 @@ The example app demonstrates:
 
 **Important Notes:**
 
-- 🚀 **Expo Go Mode**: Quick UI testing, but barcode scanning won't work
+- 🚀 **Expo Go Mode**: Barcode scanning won't work
 - ⚡ **Prebuild Mode**: Full functionality including barcode scanning (requires Xcode/Android Studio)
-- 📖 **See [QUICK_START.md](./example/QUICK_START.md)** for detailed setup instructions
+- 📖 **See [README.md](./example/README.md)** for detailed setup instructions
 
 **Platform Support:**
 
 - 📱 **iOS**: Full camera and gallery access
 - 🤖 **Android**: Full camera and gallery access
-- 🌐 **Web**: Photo library access (camera limited by browser)
 
 ## 🤝 Contributing
 
