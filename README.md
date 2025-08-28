@@ -31,6 +31,7 @@ A lightweight, high-performance React Native library for scanning QR codes and b
 - **🔄 Smart Recognition**: Automatic rotation, grayscale conversion, and contrast enhancement
 - **🔒 Type Safe**: Full TypeScript support with comprehensive type definitions
 - **🛠️ Expo Compatible**: Works with Expo (requires prebuild for native functionality)
+- **🏗️ Robust CI/CD**: Enhanced build pipeline with improved cross-platform reliability
 
 ## 📋 Supported Barcode Formats
 
@@ -54,9 +55,11 @@ A lightweight, high-performance React Native library for scanning QR codes and b
 
 | React Native Version | Package Version | Status                                       |
 | -------------------- | --------------- | -------------------------------------------- |
-| 0.70.x - 0.74.x      | ✅ 0.1.x        | Fully Supported                              |
-| 0.75.x - 0.79.x      | ✅ 0.1.x        | Fully Supported (including New Architecture) |
-| 0.80.x+              | ✅ 0.1.x        | Fully Supported (when released)              |
+| 0.70.x - 0.74.x      | ✅ 1.0.x        | Fully Supported                              |
+| 0.75.x - 0.79.x      | ✅ 1.0.x        | Fully Supported (including New Architecture) |
+| 0.80.x+              | ✅ 1.0.x        | Fully Supported (when released)              |
+
+**Latest Version**: v1.0.0 - Major stable release with enhanced CI pipeline and build reliability improvements
 
 ### Requirements
 

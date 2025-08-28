@@ -4,36 +4,36 @@
 
 ### React Native Versions
 
-| React Native | Package Version | Architecture Support | Notes |
-|-------------|-----------------|---------------------|--------|
-| 0.70.x      | ✅ 0.1.x       | Old Architecture    | Full support |
-| 0.71.x      | ✅ 0.1.x       | Old Architecture    | Full support |
-| 0.72.x      | ✅ 0.1.x       | Old Architecture    | Full support |
-| 0.73.x      | ✅ 0.1.x       | Old & New Architecture | Full support |
-| 0.74.x      | ✅ 0.1.x       | Old & New Architecture | Full support |
-| 0.75.x      | ✅ 0.1.x       | Old & New Architecture | Full support |
-| 0.76.x      | ✅ 0.1.x       | New Architecture (default) | Full support |
-| 0.77.x      | ✅ 0.1.x       | New Architecture (default) | Full support |
-| 0.78.x      | ✅ 0.1.x       | New Architecture (default) | Full support |
-| **0.79.x**  | ✅ **0.1.x**   | **New Architecture (default)** | **Latest - Full support** |
-| 0.80.x+     | 🔜 0.1.x       | New Architecture    | Ready when released |
+| React Native | Package Version | Architecture Support           | Notes                     |
+| ------------ | --------------- | ------------------------------ | ------------------------- |
+| 0.70.x       | ✅ 1.0.x        | Old Architecture               | Full support              |
+| 0.71.x       | ✅ 1.0.x        | Old Architecture               | Full support              |
+| 0.72.x       | ✅ 1.0.x        | Old Architecture               | Full support              |
+| 0.73.x       | ✅ 1.0.x        | Old & New Architecture         | Full support              |
+| 0.74.x       | ✅ 1.0.x        | Old & New Architecture         | Full support              |
+| 0.75.x       | ✅ 1.0.x        | Old & New Architecture         | Full support              |
+| 0.76.x       | ✅ 1.0.x        | New Architecture (default)     | Full support              |
+| 0.77.x       | ✅ 1.0.x        | New Architecture (default)     | Full support              |
+| 0.78.x       | ✅ 1.0.x        | New Architecture (default)     | Full support              |
+| **0.79.x**   | ✅ **1.0.x**    | **New Architecture (default)** | **Latest - Full support** |
+| 0.80.x+      | 🔜 1.0.x        | New Architecture               | Ready when released       |
 
 ### React Versions
 
-| React Version | Compatibility |
-|--------------|---------------|
-| 17.x         | ✅ Supported  |
-| 18.x         | ✅ Supported (Recommended) |
-| 19.x         | ✅ Supported (Beta) |
+| React Version | Compatibility              |
+| ------------- | -------------------------- |
+| 17.x          | ✅ Supported               |
+| 18.x          | ✅ Supported (Recommended) |
+| 19.x          | ✅ Supported (Beta)        |
 
 ### Expo SDK Compatibility
 
-| Expo SDK | React Native | Package Version | Status |
-|----------|-------------|-----------------|--------|
-| SDK 49   | 0.72.x      | ✅ 0.1.x       | Supported (requires prebuild) |
-| SDK 50   | 0.73.x      | ✅ 0.1.x       | Supported (requires prebuild) |
-| SDK 51   | 0.74.x      | ✅ 0.1.x       | Supported (requires prebuild) |
-| **SDK 52** | **0.79.x** | ✅ **0.1.x**   | **Latest - Full support (requires prebuild)** |
+| Expo SDK   | React Native | Package Version | Status                                        |
+| ---------- | ------------ | --------------- | --------------------------------------------- |
+| SDK 49     | 0.72.x       | ✅ 1.0.x        | Supported (requires prebuild)                 |
+| SDK 50     | 0.73.x       | ✅ 1.0.x        | Supported (requires prebuild)                 |
+| SDK 51     | 0.74.x       | ✅ 1.0.x        | Supported (requires prebuild)                 |
+| **SDK 52** | **0.79.x**   | ✅ **1.0.x**    | **Latest - Full support (requires prebuild)** |
 
 **Note**: This library requires prebuild for Expo projects as it uses native modules.
 
@@ -67,6 +67,22 @@
 - **Node.js**: >=18.0.0 (LTS recommended)
 - **npm**: >=8.0.0
 - **Yarn**: >=1.22.0 or >=3.0.0 (Berry)
+
+## Build and CI Compatibility
+
+### Recent Improvements (v1.0.0+)
+
+- **Enhanced CI Pipeline**: Improved GitHub Actions workflow stability
+- **Android Build Fixes**: Resolved JVM compatibility issues
+- **Yarn Lockfile**: Consistent dependency management across platforms
+- **Cross-Platform Reliability**: Better build success rates on all supported platforms
+
+### Build Tools
+
+- **React Native CLI**: 15.0.0+
+- **Metro**: Latest stable version
+- **Babel**: 7.x with React Native preset
+- **TypeScript**: 5.3.0+
 
 ## New Architecture Support
 
@@ -114,6 +130,7 @@ newArchEnabled=false
 If you're upgrading from React Native 0.6x:
 
 1. Update peer dependencies:
+
    ```json
    {
      "react": ">=17.0.0",
@@ -121,9 +138,11 @@ If you're upgrading from React Native 0.6x:
    }
    ```
 
-2. Update iOS deployment target to 13.4 or higher
+2. Update package version reference to 1.0.x in your project
 
-3. Update Android minSdkVersion to 21 or higher
+3. Update iOS deployment target to 13.4 or higher
+
+4. Update Android minSdkVersion to 21 or higher
 
 ### From Old to New Architecture
 
@@ -133,7 +152,7 @@ No code changes required! The library automatically detects and uses the appropr
 // Same API for both architectures
 const results = await ImageCodeScanner.scan({
   path: imagePath,
-  formats: [BarcodeFormat.QR_CODE]
+  formats: [BarcodeFormat.QR_CODE],
 });
 ```
 
@@ -153,6 +172,7 @@ npm install react-native-image-code-scanner
 ### Automated Testing
 
 The library is tested against:
+
 - React Native 0.70.x (Old Architecture)
 - React Native 0.75.x (Both Architectures)
 - React Native 0.79.x (New Architecture)
@@ -167,6 +187,7 @@ The library is tested against:
 ### Issue: Expo Go doesn't work
 
 **Solution**: This is expected. The library uses native modules that require prebuild:
+
 ```bash
 npx expo prebuild
 npx expo run:ios # or run:android
@@ -175,6 +196,7 @@ npx expo run:ios # or run:android
 ### Issue: TypeScript errors with React Native 0.7x
 
 **Solution**: Ensure you have the correct @types/react-native:
+
 ```bash
 npm install --save-dev @types/react@^18.0.0 @types/react-native@^0.72.0
 ```

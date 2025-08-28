@@ -5,9 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
-
-## [0.1.0] - 2025-08-27
+## [1.0.0] - 2025-08-28
 
 ### Added
 
@@ -26,6 +24,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Expo compatibility** with prebuild support
 - **Expo example app** with modern UI and full feature demonstration
 - Cross-platform example app (iOS, Android, Web)
+
+### Changed
+
+- **Major Version Release**: Stable 1.0.0 release with production-ready features
+- Enhanced CI pipeline and build reliability
+- Improved cross-platform compatibility
+
+### Fixed
+
+- Resolved CI and Android build issues with Yarn lockfile and JVM compatibility
+- Improved build pipeline stability
+- Enhanced cross-platform build reliability
+- CI pipeline improvements and stability enhancements
+- Android build compatibility improvements
+- Yarn lockfile consistency fixes
 
 ### Features
 
@@ -50,4 +63,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cross-platform compatibility (iOS, Android, Web)
 - Performance timing and metrics display
 
-[0.1.0]: https://github.com/nguyenthanhan/react-native-image-code-scanner/releases/tag/v0.1.0
+[1.0.0]: https://github.com/nguyenthanhan/react-native-image-code-scanner/releases/tag/v1.0.0
