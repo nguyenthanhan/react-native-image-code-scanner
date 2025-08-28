@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   Text,
   View,
@@ -12,7 +12,9 @@ import {
   Platform,
   Switch,
 } from 'react-native';
-import ImageCodeScanner, { BarcodeFormat } from 'react-native-image-code-scanner';
+import ImageCodeScanner, {
+  BarcodeFormat,
+} from 'react-native-image-code-scanner';
 import * as ImagePicker from 'expo-image-picker';
 import { StatusBar } from 'expo-status-bar';
 
@@ -35,17 +37,16 @@ export default function App() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [scanResult, setScanResult] = useState<ScanResult | null>(null);
   const [isScanning, setIsScanning] = useState(false);
-  const [selectedFormats, setSelectedFormats] = useState<BarcodeFormat[]>([BarcodeFormat.QR_CODE]);
-  const [preprocessingOptions, setPreprocessingOptions] = useState({
-    enhanceContrast: true,
-    grayscale: true,
-    rotations: true,
-  });
+  const [selectedFormats, setSelectedFormats] = useState<BarcodeFormat[]>([
+    BarcodeFormat.QR_CODE,
+  ]);
 
   const requestPermissions = async () => {
-    const { status: cameraStatus } = await ImagePicker.requestCameraPermissionsAsync();
-    const { status: libraryStatus } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    
+    const { status: cameraStatus } =
+      await ImagePicker.requestCameraPermissionsAsync();
+    const { status: libraryStatus } =
+      await ImagePicker.requestMediaLibraryPermissionsAsync();
+
     if (cameraStatus !== 'granted' || libraryStatus !== 'granted') {
       Alert.alert(
         'Permissions Required',
@@ -100,11 +101,11 @@ export default function App() {
 
     try {
       const startTime = Date.now();
-      
+
       const results = await ImageCodeScanner.scan({
         path: selectedImage,
         formats: selectedFormats,
-        preprocessing: preprocessingOptions,
+        // Preprocessing is always enabled automatically for optimal results
       });
 
       const endTime = Date.now();
@@ -119,7 +120,10 @@ export default function App() {
         Alert.alert('No Codes Found', 'No barcodes were detected in the image');
       }
     } catch (err) {
-      Alert.alert('Scan Error', err instanceof Error ? err.message : 'Unknown error');
+      Alert.alert(
+        'Scan Error',
+        err instanceof Error ? err.message : 'Unknown error'
+      );
     } finally {
       setIsScanning(false);
     }
@@ -138,13 +142,13 @@ export default function App() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Select Image</Text>
           <View style={styles.buttonRow}>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.button}
               onPress={() => handleImagePicker('camera')}
             >
               <Text style={styles.buttonText}>📷 Camera</Text>
             </TouchableOpacity>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.button}
               onPress={() => handleImagePicker('gallery')}
             >
@@ -154,7 +158,10 @@ export default function App() {
 
           {selectedImage && (
             <View style={styles.imageContainer}>
-              <Image source={{ uri: selectedImage }} style={styles.previewImage} />
+              <Image
+                source={{ uri: selectedImage }}
+                style={styles.previewImage}
+              />
             </View>
           )}
         </View>
@@ -162,7 +169,9 @@ export default function App() {
         {/* Barcode Format Selection */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Barcode Formats</Text>
-          <Text style={styles.sectionSubtitle}>Select formats to scan for:</Text>
+          <Text style={styles.sectionSubtitle}>
+            Select formats to scan for:
+          </Text>
           {BARCODE_FORMATS.map((format) => (
             <View key={format.key} style={styles.optionRow}>
               <Text>{format.label}</Text>
@@ -170,9 +179,20 @@ export default function App() {
                 value={selectedFormats.includes(format.key)}
                 onValueChange={(value) => {
                   if (value) {
-                    setSelectedFormats(prev => [...prev, format.key]);
+                    setSelectedFormats((prev) =>
+                      prev.includes(format.key) ? prev : [...prev, format.key]
+                    );
                   } else {
-                    setSelectedFormats(prev => prev.filter(f => f !== format.key));
+                    setSelectedFormats((prev) => {
+                      if (prev.length === 1) {
+                        Alert.alert(
+                          'Format Required',
+                          'At least one format must be selected'
+                        );
+                        return prev;
+                      }
+                      return prev.filter((f) => f !== format.key);
+                    });
                   }
                 }}
               />
@@ -180,44 +200,26 @@ export default function App() {
           ))}
         </View>
 
-        {/* Preprocessing Options */}
+        {/* Automatic Preprocessing Info */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Preprocessing</Text>
-          <Text style={styles.sectionSubtitle}>Enable image enhancement options:</Text>
-          
-          <View style={styles.optionRow}>
-            <Text>Enhance Contrast</Text>
-            <Switch
-              value={preprocessingOptions.enhanceContrast}
-              onValueChange={(value) => 
-                setPreprocessingOptions(prev => ({ ...prev, enhanceContrast: value }))
-              }
-            />
-          </View>
+          <Text style={styles.sectionTitle}>Automatic Preprocessing</Text>
+          <Text style={styles.sectionSubtitle}>
+            The following enhancements are automatically applied:
+          </Text>
 
-          <View style={styles.optionRow}>
-            <Text>Grayscale</Text>
-            <Switch
-              value={preprocessingOptions.grayscale}
-              onValueChange={(value) => 
-                setPreprocessingOptions(prev => ({ ...prev, grayscale: value }))
-              }
-            />
+          <View style={styles.infoRow}>
+            <Text>• Grayscale conversion for better barcode detection</Text>
           </View>
-
-          <View style={styles.optionRow}>
-            <Text>Try Rotations</Text>
-            <Switch
-              value={preprocessingOptions.rotations}
-              onValueChange={(value) => 
-                setPreprocessingOptions(prev => ({ ...prev, rotations: value }))
-              }
-            />
+          <View style={styles.infoRow}>
+            <Text>• Contrast enhancement for improved readability</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text>• Automatic rotation detection (0°, 90°, 180°, 270°)</Text>
           </View>
         </View>
 
         {/* Scan Button */}
-        <TouchableOpacity 
+        <TouchableOpacity
           style={[styles.scanButton, !selectedImage && styles.disabledButton]}
           onPress={scanImage}
           disabled={!selectedImage || isScanning}
@@ -234,7 +236,7 @@ export default function App() {
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Results</Text>
             <Text style={styles.scanTime}>Scan time: {scanResult.time}ms</Text>
-            
+
             {scanResult.data.length > 0 ? (
               <View>
                 {scanResult.data.map((code, index) => (
@@ -331,6 +333,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: 8,
+  },
+  infoRow: {
+    paddingVertical: 4,
   },
   scanButton: {
     backgroundColor: '#4CAF50',

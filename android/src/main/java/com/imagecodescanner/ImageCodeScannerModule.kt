@@ -7,7 +7,7 @@ import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
 import android.graphics.Matrix
 import android.graphics.Paint
-import com.facebook.fbreact.specs.NativeImageCodeScannerSpec
+import com.imagecodescanner.NativeImageCodeScannerSpec
 import com.facebook.react.bridge.*
 import com.facebook.react.module.annotations.ReactModule
 import com.google.mlkit.vision.barcode.BarcodeScanning
@@ -112,21 +112,21 @@ class ImageCodeScannerModule(reactContext: ReactApplicationContext) :
 
     try {
       // Load and validate bitmap with sampling if too large
-      val options = BitmapFactory.Options()
-      options.inJustDecodeBounds = true
-      BitmapFactory.decodeFile(imgFile.absolutePath, options)
+      val bitmapOptions = BitmapFactory.Options()
+      bitmapOptions.inJustDecodeBounds = true
+      BitmapFactory.decodeFile(imgFile.absolutePath, bitmapOptions)
       
       // Calculate sample size if image is too large
       var sampleSize = 1
       val maxDimension = 2048
-      while (options.outWidth / sampleSize > maxDimension || options.outHeight / sampleSize > maxDimension) {
+      while (bitmapOptions.outWidth / sampleSize > maxDimension || bitmapOptions.outHeight / sampleSize > maxDimension) {
         sampleSize *= 2
       }
       
-      options.inJustDecodeBounds = false
-      options.inSampleSize = sampleSize
+      bitmapOptions.inJustDecodeBounds = false
+      bitmapOptions.inSampleSize = sampleSize
       
-      val originalBitmap = BitmapFactory.decodeFile(imgFile.absolutePath, options)
+      val originalBitmap = BitmapFactory.decodeFile(imgFile.absolutePath, bitmapOptions)
       if (originalBitmap == null) {
         promise.reject("INVALID_IMAGE", "Cannot decode image file: $path", null)
         return
@@ -201,7 +201,6 @@ class ImageCodeScannerModule(reactContext: ReactApplicationContext) :
         android.util.Log.w("ImageCodeScanner", "Failed to rotate: ${e.message}")
       }
       
-      var scanCompleted = false
       var currentIndex = 0
       
       fun tryNextImage() {
@@ -232,7 +231,6 @@ class ImageCodeScannerModule(reactContext: ReactApplicationContext) :
                 
                 val arr = Arguments.fromList(codes)
                 promise.resolve(arr)
-                scanCompleted = true
               } else {
                 // No barcodes found, try next preprocessing
                 tryNextImage()

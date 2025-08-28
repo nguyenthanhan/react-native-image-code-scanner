@@ -5,29 +5,27 @@
   "main": "App.tsx",
   "scripts": {
     "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
     "web": "expo start --web",
     "lint": "eslint .",
     "setup": "expo install",
     "prebuild": "expo prebuild",
     "prebuild:clean": "expo prebuild --clean",
-    "build:android": "expo run:android",
-    "build:ios": "expo run:ios"
+    "build:android": "expo prebuild --platform android && cd android && ./gradlew assembleDebug assembleAndroidTest -DtestBuildType=debug",
+    "build:ios": "expo prebuild --platform ios && cd ios && pod install && xcodebuild -workspace ImageCodeScannerExample.xcworkspace -scheme ImageCodeScannerExample -configuration Debug -sdk iphonesimulator -derivedDataPath build"
   },
   "dependencies": {
     "expo": "~52.0.0",
-    "expo-status-bar": "~2.0.0",
-    "expo-image-picker": "~16.0.0",
-    "expo-permissions": "~18.0.0",
+    "expo-image-picker": "~16.0.3",
+    "expo-status-bar": "~2.0.1",
     "react": "18.3.1",
-    "react-native": "0.76.3",
-    "react-native-image-code-scanner": "file:../"
+    "react-native": "0.76.9",
+    "react-native-image-code-scanner": "workspace:*"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
     "@types/react": "~18.3.12",
-    "@types/react-native": "~0.76.0",
     "eslint": "^8.56.0",
     "typescript": "^5.3.0"
   },

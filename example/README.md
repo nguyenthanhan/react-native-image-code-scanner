@@ -94,9 +94,9 @@ npm run build:android
 
 ## Preprocessing Options
 
-- **Enhance Contrast**: Improves image contrast for better recognition
-- **Grayscale**: Converts image to grayscale (often improves barcode detection)
-- **Rotations**: Tries multiple orientations (0°, 90°, 180°, 270°)
+- **Enhance Contrast**: Automatically improves image contrast for better recognition
+- **Grayscale**: Automatically converts image to grayscale (often improves barcode detection)
+- **Auto Rotations**: Automatically tries multiple orientations (0°, 90°, 180°, 270°)
 
 ## Supported Barcode Formats
 
