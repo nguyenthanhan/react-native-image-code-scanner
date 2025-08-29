@@ -31,7 +31,6 @@
     "!**/.*"
   ],
   "scripts": {
-    "example": "yarn workspace react-native-image-code-scanner-example",
     "test": "jest",
     "test:coverage": "jest --coverage",
     "typecheck": "tsc --noEmit",
@@ -105,9 +104,6 @@
     "react": ">=17.0.0",
     "react-native": ">=0.70.0"
   },
-  "workspaces": [
-    "example"
-  ],
   "packageManager": "yarn@3.6.1",
   "jest": {
     "preset": "react-native",
