@@ -21,6 +21,8 @@ turbo.json
 # Build and development
 example/
 modules/
+scripts/
+test-install/
 android/build/
 ios/build/
 .turbo/

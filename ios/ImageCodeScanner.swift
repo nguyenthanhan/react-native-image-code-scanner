@@ -246,18 +246,53 @@ class ImageCodeScanner: NSObject, RCTBridgeModule {
             return
           }
           
-          // Extract barcode payload strings
-          let barcodeStrings = results.compactMap { observation in
-            observation.payloadStringValue
+          // Extract barcode payload strings with format information
+          let barcodeResults = results.compactMap { observation -> [String: Any]? in
+            guard let payload = observation.payloadStringValue else { return nil }
+            
+            let format: String
+            switch observation.symbology {
+            case .qr:
+              format = "QR_CODE"
+            case .code128:
+              format = "CODE_128"
+            case .code39:
+              format = "CODE_39"
+            case .code93:
+              format = "CODE_93"
+            case .ean13:
+              format = "EAN_13"
+            case .ean8:
+              format = "EAN_8"
+            case .upce:
+              format = "UPC_E"
+            case .pdf417:
+              format = "PDF_417"
+            case .dataMatrix:
+              format = "DATA_MATRIX"
+            case .aztec:
+              format = "AZTEC"
+            case .itf14:
+              format = "ITF"
+            case .codabar:
+              format = "CODABAR"
+            default:
+              format = "UNKNOWN"
+            }
+            
+            return [
+              "content": payload,
+              "format": format
+            ]
           }
           
-          if barcodeStrings.isEmpty {
+          if barcodeResults.isEmpty {
             print("ImageCodeScanner iOS - \(description): No barcodes found")
             // Try next image
             tryScanning(images: images, index: index + 1)
           } else {
-            print("ImageCodeScanner iOS - Success with \(description)! Found \(barcodeStrings.count) codes")
-            safeResolve(barcodeStrings)
+            print("ImageCodeScanner iOS - Success with \(description)! Found \(barcodeResults.count) codes")
+            safeResolve(barcodeResults)
           }
         }
       }

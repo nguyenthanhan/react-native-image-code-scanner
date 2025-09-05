@@ -60,8 +60,6 @@ A lightweight, high-performance React Native library for scanning QR codes and b
 | **0.79.x**      | ✅ **1.0.x**    | **New Architecture (default)** | **Latest - Full Support** |
 | 0.80.x+         | 🔜 1.0.x        | New Architecture               | Ready when released       |
 
-**Latest Version**: v1.0.0 - Major stable release with enhanced CI pipeline and build reliability improvements
-
 ### Requirements
 
 - **React Native**: >=0.70.0
@@ -129,15 +127,19 @@ npx expo run:android
 ### Basic Usage
 
 ```typescript
-import ImageCodeScanner from 'react-native-image-code-scanner';
+import ImageCodeScanner, { ScanResult } from 'react-native-image-code-scanner';
 
 // Scan QR code from image
 const scanQRCode = async (imagePath: string) => {
   try {
-    const results = await ImageCodeScanner.scan({ path: imagePath });
+    const results: ScanResult[] = await ImageCodeScanner.scan({
+      path: imagePath,
+    });
 
     if (results.length > 0) {
-      console.log('QR Code found:', results[0]);
+      const firstResult = results[0];
+      console.log('QR Code found:', firstResult.content);
+      console.log('Format:', firstResult.format); // "QR_CODE"
     } else {
       console.log('No QR code found in image');
     }
@@ -152,11 +154,12 @@ const scanQRCode = async (imagePath: string) => {
 ```typescript
 import ImageCodeScanner, {
   BarcodeFormat,
+  ScanResult,
 } from 'react-native-image-code-scanner';
 
 const scanMultipleFormats = async (imagePath: string) => {
   try {
-    const results = await ImageCodeScanner.scan({
+    const results: ScanResult[] = await ImageCodeScanner.scan({
       path: imagePath,
       formats: [
         BarcodeFormat.QR_CODE,
@@ -166,7 +169,10 @@ const scanMultipleFormats = async (imagePath: string) => {
       // Automatic preprocessing is enabled by default for optimal recognition
     });
 
-    console.log('Found barcodes:', results);
+    results.forEach((result, index) => {
+      console.log(`Barcode ${index + 1}:`, result.content);
+      console.log(`Format:`, result.format);
+    });
   } catch (error) {
     console.error('Scan error:', error);
   }
@@ -187,7 +193,7 @@ As soon as a barcode is detected with any technique, the result is returned imme
 ### With Image Picker
 
 ```typescript
-import ImageCodeScanner from 'react-native-image-code-scanner';
+import ImageCodeScanner, { ScanResult } from 'react-native-image-code-scanner';
 import { launchImageLibrary } from 'react-native-image-picker';
 
 const scanFromGallery = async () => {
@@ -199,14 +205,17 @@ const scanFromGallery = async () => {
   if (result.assets && result.assets[0]) {
     const imagePath = result.assets[0].uri;
 
-    const scanResults = await ImageCodeScanner.scan({
+    const scanResults: ScanResult[] = await ImageCodeScanner.scan({
       path: imagePath,
       formats: [ImageCodeScanner.BarcodeFormat.QR_CODE],
       // Automatic preprocessing is enabled by default
     });
 
     if (scanResults.length > 0) {
-      console.log('Barcode data:', scanResults);
+      scanResults.forEach((result) => {
+        console.log('Content:', result.content);
+        console.log('Format:', result.format);
+      });
     }
   }
 };
@@ -215,7 +224,7 @@ const scanFromGallery = async () => {
 ### With Expo Image Picker
 
 ```typescript
-import ImageCodeScanner from 'react-native-image-code-scanner';
+import ImageCodeScanner, { ScanResult } from 'react-native-image-code-scanner';
 import * as ImagePicker from 'expo-image-picker';
 
 const scanFromGallery = async () => {
@@ -228,14 +237,17 @@ const scanFromGallery = async () => {
   if (!result.canceled && result.assets && result.assets[0]) {
     const imagePath = result.assets[0].uri;
 
-    const scanResults = await ImageCodeScanner.scan({
+    const scanResults: ScanResult[] = await ImageCodeScanner.scan({
       path: imagePath,
       formats: [ImageCodeScanner.BarcodeFormat.QR_CODE],
       // Automatic preprocessing is enabled by default
     });
 
     if (scanResults.length > 0) {
-      console.log('Barcode data:', scanResults);
+      scanResults.forEach((result) => {
+        console.log('Content:', result.content);
+        console.log('Format:', result.format);
+      });
     }
   }
 };
@@ -246,18 +258,23 @@ const scanFromGallery = async () => {
 ```typescript
 import ImageCodeScanner, {
   BarcodeFormat,
+  ScanResult,
 } from 'react-native-image-code-scanner';
 
 // Scan with automatic preprocessing and multiple formats
-const scanEverything = async (imagePath: string) => {
+const scanEverything = async (imagePath: string): Promise<ScanResult[]> => {
   try {
-    const results = await ImageCodeScanner.scan({
+    const results: ScanResult[] = await ImageCodeScanner.scan({
       path: imagePath,
       formats: Object.values(BarcodeFormat), // All supported formats
       // Automatic preprocessing is enabled by default
     });
 
-    console.log(`Found ${results.length} barcodes:`, results);
+    console.log(`Found ${results.length} barcodes:`);
+    results.forEach((result, index) => {
+      console.log(`${index + 1}. ${result.format}: ${result.content}`);
+    });
+
     return results;
   } catch (error) {
     console.error('Scan failed:', error);
@@ -289,7 +306,16 @@ interface ScanOptions {
 
 #### Returns
 
-`Promise<string[]>` - Array of decoded barcode values
+`Promise<ScanResult[]>` - Array of scan results with content and format information
+
+#### ScanResult
+
+```typescript
+interface ScanResult {
+  content: string; // The decoded barcode content
+  format: string; // The detected barcode format (e.g., "QR_CODE", "EAN_13")
+}
+```
 
 ### `ImageCodeScanner.BarcodeFormat`
 
@@ -396,8 +422,8 @@ The example app demonstrates:
 
 **Platform Support:**
 
-- 📱 **iOS**: Full camera and gallery access
-- 🤖 **Android**: Full camera and gallery access
+- 📱 **iOS**: Gallery access
+- 🤖 **Android**: Gallery access
 
 ## 🤝 Contributing
 
@@ -413,18 +439,10 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 
 ## 📄 License
 
-MIT © [Heimer Nguyen](https://github.com/nguyenthanhan)
+MIT
 
 ## 🆘 Support
 
 - 🐛 [Report Issues](https://github.com/nguyenthanhan/react-native-image-code-scanner/issues)
 - 💬 [Discussions](https://github.com/nguyenthanhan/react-native-image-code-scanner/discussions)
 - ⭐ Star us on [GitHub](https://github.com/nguyenthanhan/react-native-image-code-scanner)
-
-## 📝 Changelog
-
-See [CHANGELOG.md](CHANGELOG.md) for version history.
-
----
-
-Made with ❤️ by [Heimer Nguyen](https://github.com/nguyenthanhan)

@@ -13,7 +13,7 @@
     "prebuild": "expo prebuild",
     "prebuild:clean": "expo prebuild --clean",
     "build:android": "expo prebuild --platform android && cd android && ./gradlew assembleDebug assembleAndroidTest -DtestBuildType=debug",
-    "build:ios": "expo prebuild --platform ios && cd ios && pod install && xcodebuild -workspace ImageCodeScannerExample.xcworkspace -scheme ImageCodeScannerExample -configuration Debug -sdk iphonesimulator -derivedDataPath build"
+    "build:ios": "expo prebuild --clean --platform ios && cd ios && pod install --repo-update && xcodebuild -workspace ImageCodeScannerExample.xcworkspace -scheme ImageCodeScannerExample -configuration Debug -sdk iphonesimulator -derivedDataPath build"
   },
   "dependencies": {
     "expo": "~52.0.0",

@@ -14,12 +14,13 @@ import {
 } from 'react-native';
 import ImageCodeScanner, {
   BarcodeFormat,
+  type ScanResult,
 } from 'react-native-image-code-scanner';
 import * as ImagePicker from 'expo-image-picker';
 import { StatusBar } from 'expo-status-bar';
 
-interface ScanResult {
-  data: string[];
+interface ScanResultWithTime {
+  data: ScanResult[];
   time: number;
   preprocessingUsed?: string;
 }
@@ -35,7 +36,7 @@ const BARCODE_FORMATS = [
 
 export default function App() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [scanResult, setScanResult] = useState<ScanResult | null>(null);
+  const [scanResult, setScanResult] = useState<ScanResultWithTime | null>(null);
   const [isScanning, setIsScanning] = useState(false);
   const [selectedFormats, setSelectedFormats] = useState<BarcodeFormat[]>([
     BarcodeFormat.QR_CODE,
@@ -242,7 +243,8 @@ export default function App() {
                 {scanResult.data.map((code, index) => (
                   <View key={index} style={styles.resultItem}>
                     <Text style={styles.resultLabel}>Code {index + 1}:</Text>
-                    <Text style={styles.resultText}>{code}</Text>
+                    <Text style={styles.formatText}>{code.format}</Text>
+                    <Text style={styles.resultText}>{code.content}</Text>
                   </View>
                 ))}
               </View>
@@ -372,6 +374,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#333',
     fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
+  },
+  formatText: {
+    fontSize: 12,
+    color: '#007AFF',
+    fontWeight: '600',
+    backgroundColor: '#E3F2FD',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    alignSelf: 'flex-start',
+    marginBottom: 4,
   },
   noResults: {
     fontSize: 16,
