@@ -15,10 +15,11 @@ import { StatusBar } from 'expo-status-bar';
 import * as ImagePicker from 'expo-image-picker';
 import ImageCodeScanner, {
   BarcodeFormat,
+  type ScanResult,
 } from 'react-native-image-code-scanner';
 
-interface ScanResult {
-  data: string[];
+interface ScanResultWithTime {
+  data: ScanResult[];
   time: number;
 }
 
@@ -33,7 +34,7 @@ const BARCODE_FORMATS = [
 
 export default function App() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [scanResult, setScanResult] = useState<ScanResult | null>(null);
+  const [scanResult, setScanResult] = useState<ScanResultWithTime | null>(null);
   const [isScanning, setIsScanning] = useState(false);
   const [selectedFormats, setSelectedFormats] = useState<BarcodeFormat[]>([
     BarcodeFormat.QR_CODE,
@@ -255,15 +256,18 @@ export default function App() {
                     key={index}
                     style={styles.resultItem}
                     onPress={() => {
-                      Alert.alert('Code Content', code);
+                      Alert.alert('Code Content', code.content);
                     }}
                   >
                     <View style={styles.resultHeader}>
                       <Text style={styles.resultLabel}>Code {index + 1}</Text>
                       <Text style={styles.tapHint}>Tap to view</Text>
                     </View>
+                    <View style={styles.formatContainer}>
+                      <Text style={styles.formatText}>{code.format}</Text>
+                    </View>
                     <Text style={styles.resultText} numberOfLines={2}>
-                      {code}
+                      {code.content}
                     </Text>
                   </TouchableOpacity>
                 ))}
@@ -470,6 +474,19 @@ const styles = StyleSheet.create({
   tapHint: {
     fontSize: 11,
     color: '#007AFF',
+  },
+  formatContainer: {
+    marginBottom: 8,
+  },
+  formatText: {
+    fontSize: 12,
+    color: '#007AFF',
+    fontWeight: '600',
+    backgroundColor: '#E3F2FD',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    alignSelf: 'flex-start',
   },
   resultText: {
     fontSize: 15,

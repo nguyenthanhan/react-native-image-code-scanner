@@ -5,62 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.0] - 2025-08-28
+## [1.1.0] - 2025-09-05
 
 ### Added
 
-- Initial release of React Native Image Code Scanner
-- Native implementation for iOS using Vision Framework
-- Native implementation for Android using ML Kit
-- Support for 13 barcode formats (QR Code, Code 128, Code 39, etc.)
-- **Automatic image preprocessing** for optimal recognition:
-  - Contrast enhancement
-  - Grayscale conversion
-  - Multiple rotation attempts (0°, 90°, 180°, 270°)
-- **Ultra-simple API** - just pass image path and formats, preprocessing is automatic by default
-- Full support for React Native's New Architecture (Turbo Modules)
-- TypeScript support with complete type definitions
-- Comprehensive documentation and examples
-- **Expo compatibility** with prebuild support
-- **Expo example app** with modern UI and full feature demonstration
-- Cross-platform example app (iOS, Android, Web)
+- **Enhanced scan results** - Now returns both content and format information
+- New `ScanResult` interface with `content` and `format` properties
+- Format detection for all supported barcode types (QR_CODE, CODE_128, EAN_13, etc.)
+- Updated example app to display both content and barcode format
+- TypeScript support for the new result format
 
 ### Changed
 
-- **Major Version Release**: Stable 1.0.0 release with production-ready features
-- Enhanced CI pipeline and build reliability
-- Improved cross-platform compatibility
+- **Breaking Change**: `ImageCodeScanner.scan()` now returns `ScanResult[]` instead of `string[]`
+- Updated API to provide more detailed scan results
+- Enhanced example app UI to show barcode format alongside content
+- Improved result display with format badges
 
 ### Fixed
 
-- Resolved CI and Android build issues with Yarn lockfile and JVM compatibility
-- Improved build pipeline stability
-- Enhanced cross-platform build reliability
-- CI pipeline improvements and stability enhancements
-- Android build compatibility improvements
-- Yarn lockfile consistency fixes
+- Better type safety with comprehensive result interface
+- Enhanced debugging capabilities with format information
 
-### Features
+[1.1.0]: https://github.com/nguyenthanhan/react-native-image-code-scanner/releases/tag/v1.1.0
 
-- Lightweight and performant native implementation
-- **Automatic preprocessing** enabled by default for best results
-- Smart retry logic with multiple image enhancement techniques
-- No additional setup required for Android
-- Minimal iOS setup with just pod install
-- **Expo integration** with proper prebuild workflow
-- **Modern example app** using Expo Image Picker and StatusBar
-- **Simplified API** - just pass image path and formats
-- **Performance metrics** and timing measurements
-
-### Example App Features
-
-- Modern Expo-based example application
-- Barcode format selection UI with real-time toggles
-- Automatic preprocessing info with optional disable switch
-- Improved error handling and user feedback
-- Comprehensive setup documentation
-- Support for both Expo Go (UI testing) and prebuild (full functionality)
-- Cross-platform compatibility (iOS, Android, Web)
-- Performance timing and metrics display
-
-[1.0.0]: https://github.com/nguyenthanhan/react-native-image-code-scanner/releases/tag/v1.0.0
+_This changelog will be updated with each new release to document all changes, improvements, and new features._

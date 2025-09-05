@@ -95,11 +95,19 @@ example/android/
 example/dist/
 example/build/
 example/.bundle/
-example/.watchmanconfig
-example/Gemfile
-example/jest.config.js
-example/metro.config.js
-example/react-native.config.js
+
+example/.yarn/*
+!example/.yarn/patches
+!example/.yarn/plugins
+!example/.yarn/releases
+!example/.yarn/sdks
+!example/.yarn/versions
+
+example/.yarn/cache
+example/.yarn/unplugged
+example/.yarn/build-state.yml
+example/.yarn/install-state.gz
+example/.pnp.*
 
 # Expo build artifacts
 example/.expo/

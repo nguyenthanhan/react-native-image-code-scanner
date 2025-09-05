@@ -1,4 +1,4 @@
-import ImageCodeScanner from './NativeImageCodeScanner';
+import ImageCodeScanner, { type ScanResult } from './NativeImageCodeScanner';
 
 // Common formats supported by both iOS Vision and Android ML Kit
 export enum BarcodeFormat {
@@ -23,7 +23,7 @@ export interface ScanOptions {
 }
 
 const ImageCodeScannerModule = {
-  scan: (options: ScanOptions): Promise<string[]> => {
+  scan: (options: ScanOptions): Promise<ScanResult[]> => {
     const { path, formats = [BarcodeFormat.QR_CODE] } = options;
     if (!path) {
       return Promise.reject(new Error('Image path is required'));
@@ -50,4 +50,5 @@ const ImageCodeScannerModule = {
   BarcodeFormat,
 };
 
+export { type ScanResult } from './NativeImageCodeScanner';
 export default ImageCodeScannerModule;
