@@ -139,14 +139,24 @@ jobs:
             if (!TAG) {
               core.setFailed('TAG is empty, cannot create release.');
             } else {
+              // Generate release notes
+              const releaseNotes = await github.rest.repos.generateReleaseNotes({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                tag_name: TAG,
+              });
+              
+              // Add CHANGELOG reference to the body
+              const body = `${releaseNotes.data.body}\n\n---\n\n📋 **Read [CHANGELOG](https://github.com/${context.repo.owner}/${context.repo.repo}/blob/main/CHANGELOG.md) for more details**`;
+              
               await github.rest.repos.createRelease({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 tag_name: TAG,
                 name: `Release ${TAG}`,
+                body: body,
                 draft: false,
                 prerelease: PRERELEASE === 'true',
-                generate_release_notes: true,
               });
               core.info(`GitHub release created for ${TAG}`);
             }
