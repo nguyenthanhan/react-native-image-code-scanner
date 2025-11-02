@@ -138,25 +138,116 @@ jobs:
             const { TAG, PRERELEASE } = process.env;
             if (!TAG) {
               core.setFailed('TAG is empty, cannot create release.');
-            } else {
-              // Generate release notes
-              const releaseNotes = await github.rest.repos.generateReleaseNotes({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                tag_name: TAG,
-              });
-              
-              // Add CHANGELOG reference to the body
-              const body = `${releaseNotes.data.body}\n\n---\n\n📋 **Read [CHANGELOG](https://github.com/${context.repo.owner}/${context.repo.repo}/blob/main/CHANGELOG.md) for more details**`;
-              
-              await github.rest.repos.createRelease({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                tag_name: TAG,
-                name: `Release ${TAG}`,
-                body: body,
-                draft: false,
-                prerelease: PRERELEASE === 'true',
-              });
-              core.info(`GitHub release created for ${TAG}`);
+              return;
             }
+            
+            // Get the previous tag
+            let previousTag;
+            try {
+              const tags = await github.rest.repos.listTags({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                per_page: 100
+              });
+              const currentIndex = tags.data.findIndex(t => t.name === TAG);
+              previousTag = currentIndex >= 0 && currentIndex < tags.data.length - 1 
+                ? tags.data[currentIndex + 1].name 
+                : tags.data[0]?.name;
+            } catch (error) {
+              core.warning('Could not fetch previous tag');
+            }
+            
+            // Get commits between tags
+            let commits = [];
+            if (previousTag) {
+              try {
+                const comparison = await github.rest.repos.compareCommits({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  base: previousTag,
+                  head: TAG
+                });
+                commits = comparison.data.commits;
+              } catch (error) {
+                core.warning('Could not compare commits');
+              }
+            }
+            
+            // Parse conventional commits
+            const categories = {
+              feat: { title: '### 🚀 Features', items: [] },
+              fix: { title: '### 🐛 Bug Fixes', items: [] },
+              perf: { title: '### ⚡ Performance', items: [] },
+              docs: { title: '### 📝 Documentation', items: [] },
+              style: { title: '### 💄 Styling', items: [] },
+              refactor: { title: '### ♻️ Refactoring', items: [] },
+              test: { title: '### ✅ Tests', items: [] },
+              build: { title: '### 🔨 Build', items: [] },
+              ci: { title: '### 👷 CI', items: [] },
+              chore: { title: '### 🔧 Chore', items: [] },
+              revert: { title: '### ⏪ Reverts', items: [] }
+            };
+            
+            const breakingChanges = [];
+            
+            commits.forEach(commit => {
+              const message = commit.commit.message.split('\n')[0];
+              const match = message.match(/^(\w+)(\(([^)]+)\))?(!)?:\s*(.+)$/);
+              
+              if (match) {
+                const [, type, , scope, breaking, description] = match;
+                const scopeText = scope ? `**${scope}**: ` : '';
+                const sha = commit.sha.substring(0, 7);
+                const commitLink = `[${sha}](${commit.html_url})`;
+                const item = `- ${scopeText}${description} (${commitLink})`;
+                
+                if (breaking || commit.commit.message.includes('BREAKING CHANGE')) {
+                  breakingChanges.push(item);
+                }
+                
+                if (categories[type]) {
+                  categories[type].items.push(item);
+                }
+              }
+            });
+            
+            // Build release body
+            let body = '';
+            
+            if (breakingChanges.length > 0) {
+              body += '## ⚠️ BREAKING CHANGES\n\n';
+              body += breakingChanges.join('\n') + '\n\n';
+            }
+            
+            for (const category of Object.values(categories)) {
+              if (category.items.length > 0) {
+                body += category.title + '\n\n';
+                body += category.items.join('\n') + '\n\n';
+              }
+            }
+            
+            if (!body) {
+              body = '### Changes\n\n';
+              commits.forEach(commit => {
+                const message = commit.commit.message.split('\n')[0];
+                const sha = commit.sha.substring(0, 7);
+                body += `- ${message} ([${sha}](${commit.html_url}))\n`;
+              });
+            }
+            
+            if (previousTag) {
+              body += `\n---\n\n**Full Changelog**: https://github.com/${context.repo.owner}/${context.repo.repo}/compare/${previousTag}...${TAG}`;
+            }
+            
+            await github.rest.repos.createRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag_name: TAG,
+              name: `${TAG}`,
+              body: body.trim(),
+              draft: false,
+              prerelease: PRERELEASE === 'true',
+            });
+            
+            core.info(`GitHub release created for ${TAG}`);
+            core.info(`Included ${commits.length} commits in release notes`);
