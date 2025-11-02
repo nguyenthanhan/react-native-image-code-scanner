@@ -1,8 +1,11 @@
 # Source files (we publish built files)
-src/
+# NOTE: src/ must be included for React Native codegen to work
+# src/
 *.ts
 *.tsx
 !lib/**/*
+!src/**/*.ts
+!src/**/*.tsx
 
 # Config files
 tsconfig.json
