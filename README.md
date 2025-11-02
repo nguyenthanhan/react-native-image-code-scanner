@@ -112,7 +112,7 @@ npm install react-native-image-code-scanner
 npx expo install react-native-image-code-scanner
 
 # Prebuild your project
-npx expo prebuild
+npx expo prebuild --clean
 
 # Run on your preferred platform
 npx expo run:ios
