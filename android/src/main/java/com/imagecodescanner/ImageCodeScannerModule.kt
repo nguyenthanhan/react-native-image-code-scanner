@@ -250,7 +250,8 @@ class ImageCodeScannerModule(reactContext: ReactApplicationContext) :
                   }
                   .filter { it != null }
                 
-                val arr = Arguments.fromList(codes)
+                val arr = Arguments.createArray()
+                codes.forEach { code -> arr.pushMap(code) }
                 promise.resolve(arr)
               } else {
                 // No barcodes found, try next preprocessing
