@@ -10,10 +10,6 @@ on:
       - 'v*.*.*'
   workflow_dispatch:
     inputs:
-      version:
-        description: 'Version to publish (leave empty to use package.json version)'
-        required: false
-        type: string
       tag:
         description: 'npm tag (latest, beta, next)'
         required: false
@@ -61,21 +57,6 @@ jobs:
       - name: Build package
         run: yarn build
 
-      - name: Verify tag matches package.json version
-        if: ${{ github.event_name == 'push' }}
-        run: |
-          PKG_VERSION=$(node -p "require('./package.json').version")
-          if [ "v${PKG_VERSION}" != "${GITHUB_REF_NAME}" ]; then
-            echo "Tag ${GITHUB_REF_NAME} does not match package.json version v${PKG_VERSION}"
-            exit 1
-          fi
-
-      - name: Set version
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.version != '' }}
-        env:
-          INPUT_VERSION: ${{ inputs.version }}
-        run: npm version "$INPUT_VERSION" --no-git-tag-version
-
       - name: Check if version already exists on npm
         id: check_version
         run: |
@@ -88,166 +69,123 @@ jobs:
             echo "Version ${PKG_VERSION} does not exist on npm, will publish"
           fi
 
+      - name: Determine npm tag and release metadata
+        id: meta
+        run: |
+          # Determine npm tag
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            NPM_TAG="${{ inputs.tag }}"
+          else
+            # Check if this is a prerelease version (contains -, like 1.0.0-beta.1)
+            VERSION=$(node -p "require('./package.json').version")
+            if echo "$VERSION" | grep -q "-"; then
+              NPM_TAG="next"
+              PRERELEASE="true"
+            else
+              NPM_TAG="latest"
+              PRERELEASE="false"
+            fi
+          fi
+
+          echo "npm_tag=$NPM_TAG" >> "$GITHUB_OUTPUT"
+          echo "prerelease=$PRERELEASE" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
       - name: Publish to npm
         if: steps.check_version.outputs.exists == 'false'
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_DIST_TAG: ${{ inputs.tag }}
-        run: |
-          if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
-            TAG="${NPM_DIST_TAG:-latest}"
-            npm publish --provenance --tag "$TAG"
-          else
-            npm publish --provenance
-          fi
+        run: npm publish --provenance --tag ${{ steps.meta.outputs.npm_tag }}
 
-      - name: Determine release metadata
-        if: ${{ github.event_name != 'release' }}
-        id: meta
-        env:
-          INPUT_VERSION: ${{ inputs.version }}
+      - name: Extract changelog for current version
+        id: changelog
         run: |
-          set -euo pipefail
-          TAG=""
-          PRERELEASE="false"
-          if [ "${GITHUB_EVENT_NAME}" = "push" ]; then
-            TAG="${GITHUB_REF_NAME}"
-          elif [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
-            if [ -n "${INPUT_VERSION:-}" ]; then
-              TAG="v${INPUT_VERSION}"
+          VERSION="${{ steps.meta.outputs.version }}"
+
+          if [ -f "CHANGELOG.md" ]; then
+            # Extract content for this version from CHANGELOG.md
+            # Match lines between "## <small>VERSION" or "## [VERSION]" and next "## "
+            CHANGELOG=$(awk "/^## .*${VERSION}/,/^## [^#]/" CHANGELOG.md | sed '1d;$d')
+            
+            if [ -n "$CHANGELOG" ]; then
+              echo "found=true" >> "$GITHUB_OUTPUT"
+              echo "$CHANGELOG" > /tmp/changelog.txt
             else
-              PKG_VERSION="$(node -p "require('./package.json').version")"
-              TAG="v${PKG_VERSION}"
+              echo "found=false" >> "$GITHUB_OUTPUT"
             fi
+          else
+            echo "found=false" >> "$GITHUB_OUTPUT"
           fi
-          if echo "$TAG" | grep -q -- "-"; then
-            PRERELEASE="true"
-          fi
-          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
-          echo "prerelease=$PRERELEASE" >> "$GITHUB_OUTPUT"
 
       - name: Create GitHub Release
         uses: actions/github-script@v7
-        if: ${{ github.event_name != 'release' }}
         env:
-          TAG: ${{ steps.meta.outputs.tag }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: v${{ steps.meta.outputs.version }}
           PRERELEASE: ${{ steps.meta.outputs.prerelease }}
+          CHANGELOG_FOUND: ${{ steps.changelog.outputs.found }}
         with:
           script: |
-            const { TAG, PRERELEASE } = process.env;
-            if (!TAG) {
-              core.setFailed('TAG is empty, cannot create release.');
-              return;
+            const fs = require('fs');
+            const { TAG, PRERELEASE, CHANGELOG_FOUND } = process.env;
+
+            let body = '';
+
+            // Try to use changelog from CHANGELOG.md
+            if (CHANGELOG_FOUND === 'true') {
+              try {
+                body = fs.readFileSync('/tmp/changelog.txt', 'utf8').trim();
+                core.info('Using changelog from CHANGELOG.md');
+              } catch (error) {
+                core.warning('Could not read changelog file');
+              }
             }
-            
-            // Get the previous tag
-            let previousTag;
-            try {
+
+            // Fallback: generate from commits if no changelog
+            if (!body) {
+              core.info('Generating changelog from commits');
+              
               const tags = await github.rest.repos.listTags({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 per_page: 100
               });
+              
               const currentIndex = tags.data.findIndex(t => t.name === TAG);
-              previousTag = currentIndex >= 0 && currentIndex < tags.data.length - 1 
+              const previousTag = currentIndex >= 0 && currentIndex < tags.data.length - 1 
                 ? tags.data[currentIndex + 1].name 
-                : tags.data[0]?.name;
-            } catch (error) {
-              core.warning('Could not fetch previous tag');
-            }
-            
-            // Get commits between tags
-            let commits = [];
-            if (previousTag) {
-              try {
+                : null;
+              
+              if (previousTag) {
                 const comparison = await github.rest.repos.compareCommits({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   base: previousTag,
                   head: TAG
                 });
-                commits = comparison.data.commits;
-              } catch (error) {
-                core.warning('Could not compare commits');
-              }
-            }
-            
-            // Parse conventional commits
-            const categories = {
-              feat: { title: '### 🚀 Features', items: [] },
-              fix: { title: '### 🐛 Bug Fixes', items: [] },
-              perf: { title: '### ⚡ Performance', items: [] },
-              docs: { title: '### 📝 Documentation', items: [] },
-              style: { title: '### 💄 Styling', items: [] },
-              refactor: { title: '### ♻️ Refactoring', items: [] },
-              test: { title: '### ✅ Tests', items: [] },
-              build: { title: '### 🔨 Build', items: [] },
-              ci: { title: '### 👷 CI', items: [] },
-              chore: { title: '### 🔧 Chore', items: [] },
-              revert: { title: '### ⏪ Reverts', items: [] }
-            };
-            
-            const breakingChanges = [];
-            
-            commits.forEach(commit => {
-              const message = commit.commit.message.split('\n')[0];
-              const match = message.match(/^(\w+)(\(([^)]+)\))?(!)?:\s*(.+)$/);
-              
-              if (match) {
-                const [, type, , scope, breaking, description] = match;
-                const scopeText = scope ? `**${scope}**: ` : '';
-                const sha = commit.sha.substring(0, 7);
-                const commitLink = `[${sha}](${commit.html_url})`;
-                const item = `- ${scopeText}${description} (${commitLink})`;
                 
-                if (breaking || commit.commit.message.includes('BREAKING CHANGE')) {
-                  breakingChanges.push(item);
-                }
+                body = '### Changes\n\n';
+                comparison.data.commits.forEach(commit => {
+                  const message = commit.commit.message.split('\n')[0];
+                  const sha = commit.sha.substring(0, 7);
+                  body += `- ${message} ([${sha}](${commit.html_url}))\n`;
+                });
                 
-                if (categories[type]) {
-                  categories[type].items.push(item);
-                }
-              }
-            });
-            
-            // Build release body
-            let body = '';
-            
-            if (breakingChanges.length > 0) {
-              body += '## ⚠️ BREAKING CHANGES\n\n';
-              body += breakingChanges.join('\n') + '\n\n';
-            }
-            
-            for (const category of Object.values(categories)) {
-              if (category.items.length > 0) {
-                body += category.title + '\n\n';
-                body += category.items.join('\n') + '\n\n';
+                body += `\n**Full Changelog**: https://github.com/${context.repo.owner}/${context.repo.repo}/compare/${previousTag}...${TAG}`;
               }
             }
-            
+
             if (!body) {
-              body = '### Changes\n\n';
-              commits.forEach(commit => {
-                const message = commit.commit.message.split('\n')[0];
-                const sha = commit.sha.substring(0, 7);
-                body += `- ${message} ([${sha}](${commit.html_url}))\n`;
-              });
+              body = 'Release ' + TAG;
             }
-            
-            if (previousTag) {
-              body += `\n---\n\n**Full Changelog**: https://github.com/${context.repo.owner}/${context.repo.repo}/compare/${previousTag}...${TAG}`;
-            }
-            
+
             await github.rest.repos.createRelease({
               owner: context.repo.owner,
               repo: context.repo.repo,
               tag_name: TAG,
-              name: `${TAG}`,
-              body: body.trim(),
+              name: TAG,
+              body: body,
               draft: false,
               prerelease: PRERELEASE === 'true',
             });
-            
+
             core.info(`GitHub release created for ${TAG}`);
-            core.info(`Included ${commits.length} commits in release notes`);
