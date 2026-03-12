@@ -106,6 +106,11 @@ class ImageCodeScanner: NSObject, RCTBridgeModule {
     }
   }
 
+  private func isLikelyUPCA(fromEAN13 payload: String) -> Bool {
+    guard payload.count == 13, payload.hasPrefix("0") else { return false }
+    return payload.allSatisfy(\.isNumber)
+  }
+
   @objc(scanFromPath:formats:options:resolver:rejecter:)
   func scanFromPath(_ path: String,
                     formats: [String],
@@ -173,6 +178,11 @@ class ImageCodeScanner: NSObject, RCTBridgeModule {
     
     // Convert formats array to Vision symbologies
     var symbologies: [VNBarcodeSymbology] = []
+    let requestedUPCA = formats.contains("UPC_A")
+    let requestedEAN13 = formats.contains("EAN_13")
+    // Normalize EAN-13 payloads with leading zero to UPC-A only when caller
+    // explicitly requests UPC-A without also requesting EAN-13.
+    let shouldNormalizeUPCA = requestedUPCA && !requestedEAN13
     
     for format in formats {
       switch format {
@@ -251,37 +261,56 @@ class ImageCodeScanner: NSObject, RCTBridgeModule {
             guard let payload = observation.payloadStringValue else { return nil }
             
             let format: String
+            let normalizedPayload: String
             switch observation.symbology {
             case .qr:
               format = "QR_CODE"
+              normalizedPayload = payload
             case .code128:
               format = "CODE_128"
+              normalizedPayload = payload
             case .code39:
               format = "CODE_39"
+              normalizedPayload = payload
             case .code93:
               format = "CODE_93"
+              normalizedPayload = payload
             case .ean13:
-              format = "EAN_13"
+              if shouldNormalizeUPCA && self.isLikelyUPCA(fromEAN13: payload) {
+                format = "UPC_A"
+                normalizedPayload = String(payload.dropFirst())
+              } else {
+                format = "EAN_13"
+                normalizedPayload = payload
+              }
             case .ean8:
               format = "EAN_8"
+              normalizedPayload = payload
             case .upce:
               format = "UPC_E"
+              normalizedPayload = payload
             case .pdf417:
               format = "PDF_417"
+              normalizedPayload = payload
             case .dataMatrix:
               format = "DATA_MATRIX"
+              normalizedPayload = payload
             case .aztec:
               format = "AZTEC"
+              normalizedPayload = payload
             case .itf14:
               format = "ITF"
+              normalizedPayload = payload
             case .codabar:
               format = "CODABAR"
+              normalizedPayload = payload
             default:
               format = "UNKNOWN"
+              normalizedPayload = payload
             }
             
             return [
-              "content": payload,
+              "content": normalizedPayload,
               "format": format
             ]
           }
