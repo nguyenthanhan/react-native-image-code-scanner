@@ -65,7 +65,6 @@
     "@react-native-community/cli": "17.0.1",
     "@react-native/babel-preset": "0.79.2",
     "@react-native/eslint-config": "^0.79.2",
-    "@release-it/conventional-changelog": "^10.0.5",
     "@types/jest": "^29.5.5",
     "@types/react": "^18.3.12",
     "commitlint": "^19.6.1",

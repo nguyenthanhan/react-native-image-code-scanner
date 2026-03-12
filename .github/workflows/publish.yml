@@ -1,13 +1,15 @@
 name: Publish to npm
 
 concurrency:
-  group: publish-${{ github.ref }}
+  group: publish-${{ github.event.workflow_run.head_sha || github.sha }}
   cancel-in-progress: true
 
 on:
-  push:
-    tags:
-      - 'v*.*.*'
+  workflow_run:
+    workflows:
+      - CI
+    types:
+      - completed
   workflow_dispatch:
     inputs:
       tag:
@@ -21,7 +23,74 @@ on:
           - next
 
 jobs:
+  prepare:
+    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      should_publish: ${{ steps.meta.outputs.should_publish }}
+      release_tag: ${{ steps.meta.outputs.release_tag }}
+      npm_tag: ${{ steps.meta.outputs.npm_tag }}
+      prerelease: ${{ steps.meta.outputs.prerelease }}
+      version: ${{ steps.meta.outputs.version }}
+      ref_sha: ${{ steps.meta.outputs.ref_sha }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Determine release metadata
+        id: meta
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          REF_SHA="${{ github.event.workflow_run.head_sha || github.sha }}"
+          VERSION="$(node -p "require('./package.json').version")"
+
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            RELEASE_TAG="v${VERSION}"
+            NPM_TAG="${{ inputs.tag }}"
+            SHOULD_PUBLISH="true"
+            if echo "$VERSION" | grep -q "-"; then
+              PRERELEASE="true"
+            else
+              PRERELEASE="false"
+            fi
+          else
+            RELEASE_TAG="$(git tag --points-at "$REF_SHA" | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+([.-].*)?$' | head -n1 || true)"
+
+            if [ -z "$RELEASE_TAG" ]; then
+              echo "No semver tag found for commit $REF_SHA. Skipping publish."
+              SHOULD_PUBLISH="false"
+              NPM_TAG=""
+              PRERELEASE="false"
+            else
+              SHOULD_PUBLISH="true"
+              if echo "$VERSION" | grep -q "-"; then
+                NPM_TAG="next"
+                PRERELEASE="true"
+              else
+                NPM_TAG="latest"
+                PRERELEASE="false"
+              fi
+            fi
+          fi
+
+          echo "should_publish=$SHOULD_PUBLISH" >> "$GITHUB_OUTPUT"
+          echo "release_tag=$RELEASE_TAG" >> "$GITHUB_OUTPUT"
+          echo "npm_tag=$NPM_TAG" >> "$GITHUB_OUTPUT"
+          echo "prerelease=$PRERELEASE" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "ref_sha=$REF_SHA" >> "$GITHUB_OUTPUT"
+
   publish:
+    if: needs.prepare.outputs.should_publish == 'true'
+    needs: prepare
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -29,12 +98,16 @@ jobs:
       id-token: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ needs.prepare.outputs.ref_sha }}
+          fetch-depth: 0
+          fetch-tags: true
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: '20'
+          node-version: '24'
           registry-url: 'https://registry.npmjs.org'
 
       - name: Enable Corepack (Yarn 3)
@@ -60,7 +133,7 @@ jobs:
       - name: Check if version already exists on npm
         id: check_version
         run: |
-          PKG_VERSION=$(node -p "require('./package.json').version")
+          PKG_VERSION="${{ needs.prepare.outputs.version }}"
           if npm view "$(node -p "require('./package.json').name")@${PKG_VERSION}" version >/dev/null 2>&1; then
             echo "exists=true" >> "$GITHUB_OUTPUT"
             echo "Version ${PKG_VERSION} already exists on npm, skipping publish"
@@ -69,44 +142,17 @@ jobs:
             echo "Version ${PKG_VERSION} does not exist on npm, will publish"
           fi
 
-      - name: Determine npm tag and release metadata
-        id: meta
-        run: |
-          # Determine npm tag
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            NPM_TAG="${{ inputs.tag }}"
-          else
-            # Check if this is a prerelease version (contains -, like 1.0.0-beta.1)
-            VERSION=$(node -p "require('./package.json').version")
-            if echo "$VERSION" | grep -q "-"; then
-              NPM_TAG="next"
-              PRERELEASE="true"
-            else
-              NPM_TAG="latest"
-              PRERELEASE="false"
-            fi
-          fi
-
-          echo "npm_tag=$NPM_TAG" >> "$GITHUB_OUTPUT"
-          echo "prerelease=$PRERELEASE" >> "$GITHUB_OUTPUT"
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-
       - name: Publish to npm
         if: steps.check_version.outputs.exists == 'false'
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm publish --provenance --tag ${{ steps.meta.outputs.npm_tag }}
+        run: npm publish --provenance --tag ${{ needs.prepare.outputs.npm_tag }}
 
       - name: Extract changelog for current version
         id: changelog
         run: |
-          VERSION="${{ steps.meta.outputs.version }}"
+          VERSION="${{ needs.prepare.outputs.version }}"
 
           if [ -f "CHANGELOG.md" ]; then
-            # Extract content for this version from CHANGELOG.md
-            # Match lines between "## <small>VERSION" or "## [VERSION]" and next "## "
             CHANGELOG=$(awk "/^## .*${VERSION}/,/^## [^#]/" CHANGELOG.md | sed '1d;$d')
-            
             if [ -n "$CHANGELOG" ]; then
               echo "found=true" >> "$GITHUB_OUTPUT"
               echo "$CHANGELOG" > /tmp/changelog.txt
@@ -118,10 +164,10 @@ jobs:
           fi
 
       - name: Create GitHub Release
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         env:
-          TAG: v${{ steps.meta.outputs.version }}
-          PRERELEASE: ${{ steps.meta.outputs.prerelease }}
+          TAG: ${{ needs.prepare.outputs.release_tag }}
+          PRERELEASE: ${{ needs.prepare.outputs.prerelease }}
           CHANGELOG_FOUND: ${{ steps.changelog.outputs.found }}
         with:
           script: |
@@ -130,7 +176,6 @@ jobs:
 
             let body = '';
 
-            // Try to use changelog from CHANGELOG.md
             if (CHANGELOG_FOUND === 'true') {
               try {
                 body = fs.readFileSync('/tmp/changelog.txt', 'utf8').trim();
@@ -140,21 +185,20 @@ jobs:
               }
             }
 
-            // Fallback: generate from commits if no changelog
             if (!body) {
               core.info('Generating changelog from commits');
-              
+
               const tags = await github.rest.repos.listTags({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 per_page: 100
               });
-              
+
               const currentIndex = tags.data.findIndex(t => t.name === TAG);
-              const previousTag = currentIndex >= 0 && currentIndex < tags.data.length - 1 
-                ? tags.data[currentIndex + 1].name 
+              const previousTag = currentIndex >= 0 && currentIndex < tags.data.length - 1
+                ? tags.data[currentIndex + 1].name
                 : null;
-              
+
               if (previousTag) {
                 const comparison = await github.rest.repos.compareCommits({
                   owner: context.repo.owner,
@@ -162,20 +206,20 @@ jobs:
                   base: previousTag,
                   head: TAG
                 });
-                
+
                 body = '### Changes\n\n';
                 comparison.data.commits.forEach(commit => {
                   const message = commit.commit.message.split('\n')[0];
                   const sha = commit.sha.substring(0, 7);
                   body += `- ${message} ([${sha}](${commit.html_url}))\n`;
                 });
-                
+
                 body += `\n**Full Changelog**: https://github.com/${context.repo.owner}/${context.repo.repo}/compare/${previousTag}...${TAG}`;
               }
             }
 
             if (!body) {
-              body = 'Release ' + TAG;
+              body = `Release ${TAG}`;
             }
 
             await github.rest.repos.createRelease({
@@ -183,7 +227,7 @@ jobs:
               repo: context.repo.repo,
               tag_name: TAG,
               name: TAG,
-              body: body,
+              body,
               draft: false,
               prerelease: PRERELEASE === 'true',
             });
