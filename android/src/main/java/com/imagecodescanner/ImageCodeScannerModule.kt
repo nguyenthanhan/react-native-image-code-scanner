@@ -110,6 +110,19 @@ class ImageCodeScannerModule(reactContext: ReactApplicationContext) :
       return
     }
 
+    val imagesToTry = mutableListOf<Pair<String, Bitmap>>()
+
+    fun cleanupBitmaps() {
+      val recycled = mutableSetOf<Int>()
+      imagesToTry.forEach { (_, bitmap) ->
+        val identity = System.identityHashCode(bitmap)
+        if (!bitmap.isRecycled && recycled.add(identity)) {
+          bitmap.recycle()
+        }
+      }
+      imagesToTry.clear()
+    }
+
     try {
       // Load and validate bitmap with sampling if too large
       val bitmapOptions = BitmapFactory.Options()
@@ -134,6 +147,9 @@ class ImageCodeScannerModule(reactContext: ReactApplicationContext) :
       
       // Scale if needed for better processing
       val bitmap = scaleBitmapIfNeeded(originalBitmap)
+      if (bitmap !== originalBitmap && !originalBitmap.isRecycled) {
+        originalBitmap.recycle()
+      }
 
       // Convert formats array to ML Kit barcode formats
       val barcodeFormats = mutableListOf<Int>()
@@ -172,7 +188,6 @@ class ImageCodeScannerModule(reactContext: ReactApplicationContext) :
         .build()
 
       // List of images to try with different preprocessing - always try all options
-      val imagesToTry = mutableListOf<Pair<String, Bitmap>>()
       imagesToTry.add("Original" to bitmap)
       
       // Always add grayscale version
@@ -207,6 +222,7 @@ class ImageCodeScannerModule(reactContext: ReactApplicationContext) :
         if (currentIndex >= imagesToTry.size) {
           // No more images to try, return empty result
           val arr = Arguments.fromList(emptyList<String>())
+          cleanupBitmaps()
           promise.resolve(arr)
           return
         }
@@ -252,6 +268,7 @@ class ImageCodeScannerModule(reactContext: ReactApplicationContext) :
                 
                 val arr = Arguments.createArray()
                 codes.forEach { code -> arr.pushMap(code) }
+                cleanupBitmaps()
                 promise.resolve(arr)
               } else {
                 // No barcodes found, try next preprocessing
@@ -275,6 +292,7 @@ class ImageCodeScannerModule(reactContext: ReactApplicationContext) :
       tryNextImage()
         
     } catch (e: Exception) {
+      cleanupBitmaps()
       promise.reject("IMAGE_LOAD_ERROR", "Error loading image: ${e.message}", e)
     }
   }
