@@ -7412,23 +7412,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"expo-image-loader@npm:~5.0.0":
-  version: 5.0.0
-  resolution: "expo-image-loader@npm:5.0.0"
+"expo-image-loader@npm:~55.0.0":
+  version: 55.0.0
+  resolution: "expo-image-loader@npm:55.0.0"
   peerDependencies:
     expo: "*"
-  checksum: 7741b4b926124a1f85e51b0b8c8c9adc37fccf0654eaa0e715cb55cffc716bdc149c0421120f9bec69a69643d3328ec8562899b4aa37a0fdcecfb6fe3cf6f985
+  checksum: 7c2fce06850bcca5f8b616a782729849d4c858a8e0e0785dcb704461c6acb6212931cefd50aef357eee03511b45b132df68f043449c5e2bfcd0a94a03c16fd51
   languageName: node
   linkType: hard
 
-"expo-image-picker@npm:~16.0.3":
-  version: 16.0.6
-  resolution: "expo-image-picker@npm:16.0.6"
+"expo-image-picker@npm:~55.0.12":
+  version: 55.0.12
+  resolution: "expo-image-picker@npm:55.0.12"
   dependencies:
-    expo-image-loader: ~5.0.0
+    expo-image-loader: ~55.0.0
   peerDependencies:
     expo: "*"
-  checksum: 448097075ad08c99a9c2857547e36f07e5e491fe5264fe03e77418271f077478a89f1ad462febedb9070013bf90f826b75ad4b2855d98a93593f76ae20c121de
+  checksum: 5e23ee39354da63a626da912acd40935cdb62808b2420507c49a57484347e87fb9f18f07f1a444c5ae091b33d8320ed9c8ed190188dceb74910b609cbc07aeec
   languageName: node
   linkType: hard
 
@@ -12677,7 +12677,7 @@ __metadata:
     "@types/react": ~18.3.12
     eslint: ^8.56.0
     expo: ~52.0.0
-    expo-image-picker: ~16.0.3
+    expo-image-picker: ~55.0.12
     expo-status-bar: ~2.0.1
     react: 18.3.1
     react-native: 0.76.9
