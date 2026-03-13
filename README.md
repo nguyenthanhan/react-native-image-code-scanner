@@ -18,12 +18,18 @@
   </a>
 </p>
 
-Scan QR code/barcode from image files in React Native.
+Scan QR codes and barcodes from local image files in React Native (iOS Vision Framework + Android ML Kit), with Expo prebuild support.
 
 - Native engine: iOS Vision Framework + Android ML Kit
 - Cross-platform: iOS, Android
 - Auto preprocessing: grayscale, contrast boost, rotation retry
 - TypeScript support
+
+## Use Cases
+
+- Scan QR/barcode from gallery images
+- Process receipts, labels, and shipping codes from static photos
+- Support mixed barcode formats in one scan flow
 
 ## Requirements
 
